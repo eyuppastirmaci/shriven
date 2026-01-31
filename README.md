@@ -5,10 +5,9 @@ A simple, distributed URL shortener built with Kotlin and Angular. It uses Snowf
 ## Tech Stack
 
 - **Backend:** Kotlin + Spring Boot 4
-- **Database:** PostgreSQL (primary) + Redis (cache)
-- **Messaging:** Apache Kafka (KRaft mode)
-- **Frontend:** Angular 19 with SSR
-- **DevOps:** Docker Compose
+- **Database:** PostgreSQL + Redis
+- **Messaging:** Apache Kafka
+- **Frontend:** Angular 21
 
 ## Architecture Highlights
 
