@@ -4,7 +4,7 @@ A simple, distributed URL shortener built with Kotlin and Angular. It uses Snowf
 
 ## Tech Stack
 
-- **Backend:** Kotlin + Spring Boot 3 + JetBrains Exposed
+- **Backend:** Kotlin + Spring Boot 4
 - **Database:** PostgreSQL (primary) + Redis (cache)
 - **Messaging:** Apache Kafka (KRaft mode)
 - **Frontend:** Angular 19 with SSR
