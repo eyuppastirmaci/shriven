@@ -1,0 +1,32 @@
+### General & IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+*.log
+
+### Backend (Kotlin/Spring)
+.gradle/
+build/
+out/
+bin/
+
+# Keep Gradle Wrapper
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# Local Config & Secrets
+**/application-local.yml
+.env
+
+### Frontend (Angular)
+node_modules/
+.angular/
+dist/
+coverage/
+npm-debug.log
+yarn-error.log
+
+### Docker
+docker-compose.override.yml
