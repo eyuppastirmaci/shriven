@@ -9,6 +9,7 @@ import com.eyuppastirmaci.shriven.backend.url.dto.request.UpdateUrlRequest
 import com.eyuppastirmaci.shriven.backend.url.dto.response.AliasAvailabilityResponse
 import com.eyuppastirmaci.shriven.backend.url.dto.response.ShortenUrlResponse
 import com.eyuppastirmaci.shriven.backend.url.dto.response.UserUrlResponse
+import com.eyuppastirmaci.shriven.backend.ratelimit.RateLimited
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -32,6 +33,7 @@ class UrlController(
 ) {
 
     @PostMapping("/api/shorten")
+    @RateLimited(requestsPerMinute = 10, keyPrefix = "shorten")
     fun shortenUrl(
         @Valid @RequestBody request: ShortenUrlRequest,
         @AuthenticationPrincipal principal: AuthPrincipal?
@@ -51,9 +53,9 @@ class UrlController(
     }
 
     @GetMapping("/{shortCode}")
+    @RateLimited(requestsPerMinute = 120, keyPrefix = "redirect")
     fun redirect(
-        @PathVariable shortCode: String,
-        request: HttpServletRequest
+        @PathVariable shortCode: String
     ): ResponseEntity<Void> {
         if (!base62Encoder.isValid(shortCode) && !shortCode.matches(Regex("^[a-zA-Z0-9_-]{3,30}$"))) {
             return ResponseEntity.badRequest().build()

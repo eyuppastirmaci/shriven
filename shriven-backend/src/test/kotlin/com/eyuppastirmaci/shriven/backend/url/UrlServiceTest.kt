@@ -7,6 +7,7 @@ import com.eyuppastirmaci.shriven.backend.exception.UrlExpiredException
 import com.eyuppastirmaci.shriven.backend.exception.UrlNotFoundException
 import com.eyuppastirmaci.shriven.backend.exception.UrlPausedException
 import com.eyuppastirmaci.shriven.backend.properties.AppProperties
+import com.eyuppastirmaci.shriven.backend.properties.CacheProperties
 import com.eyuppastirmaci.shriven.backend.redis.RedisClient
 import com.eyuppastirmaci.shriven.backend.snowflake.Base62Encoder
 import com.eyuppastirmaci.shriven.backend.snowflake.SnowflakeIdGenerator
@@ -17,6 +18,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import java.time.Duration
 import java.time.Instant
 import kotlin.test.assertEquals
 
@@ -27,11 +29,12 @@ class UrlServiceTest {
     private val snowflakeIdGenerator = mockk<SnowflakeIdGenerator>()
     private val base62Encoder = mockk<Base62Encoder>()
     private val redisClient = mockk<RedisClient>(relaxed = true)
+    private val cacheProperties = CacheProperties(ttl = Duration.ofHours(24))
     private val appProperties = AppProperties(baseUrl = "https://sho.rt")
 
     private val urlService = UrlService(
         urlRepository, tagRepository, snowflakeIdGenerator, base62Encoder,
-        redisClient, appProperties
+        redisClient, cacheProperties, appProperties
     )
 
     // -- shortenUrl --
@@ -53,7 +56,7 @@ class UrlServiceTest {
         assertEquals("abc", result.shortCode)
         assertEquals("https://example.com", result.longUrl)
         verify { urlRepository.save(any()) }
-        verify { redisClient.saveUrl("abc", "https://example.com") }
+        verify { redisClient.set("short:abc", "https://example.com", any()) }
     }
 
     @Test
@@ -73,7 +76,7 @@ class UrlServiceTest {
 
     @Test
     fun `getLongUrl returns cached URL on cache hit`() {
-        every { redisClient.getUrl("abc") } returns "https://example.com"
+        every { redisClient.get("short:abc") } returns "https://example.com"
 
         val result = urlService.getLongUrl("abc")
 
@@ -83,7 +86,7 @@ class UrlServiceTest {
 
     @Test
     fun `getLongUrl falls back to DB on cache miss and populates cache`() {
-        every { redisClient.getUrl("abc") } returns null
+        every { redisClient.get("short:abc") } returns null
         val entity = UrlEntity(
             id = 1L, shortCode = "abc", longUrl = "https://example.com",
             createdAt = Instant.now(), clickCount = 0
@@ -93,12 +96,12 @@ class UrlServiceTest {
         val result = urlService.getLongUrl("abc")
 
         assertEquals("https://example.com", result)
-        verify { redisClient.saveUrl("abc", "https://example.com") }
+        verify { redisClient.set("short:abc", "https://example.com", any()) }
     }
 
     @Test
     fun `getLongUrl throws UrlNotFoundException when shortCode not in DB`() {
-        every { redisClient.getUrl("nope") } returns null
+        every { redisClient.get("short:nope") } returns null
         every { urlRepository.findByShortCode("nope") } returns null
 
         assertThrows<UrlNotFoundException> {
@@ -108,7 +111,7 @@ class UrlServiceTest {
 
     @Test
     fun `getLongUrl throws UrlExpiredException for expired URL`() {
-        every { redisClient.getUrl("exp") } returns null
+        every { redisClient.get("short:exp") } returns null
         val entity = UrlEntity(
             id = 1L, shortCode = "exp", longUrl = "https://expired.com",
             createdAt = Instant.now(), expiresAt = Instant.parse("2020-01-01T00:00:00Z"), clickCount = 0
@@ -122,7 +125,7 @@ class UrlServiceTest {
 
     @Test
     fun `getLongUrl throws UrlPausedException for paused URL`() {
-        every { redisClient.getUrl("paused") } returns null
+        every { redisClient.get("short:paused") } returns null
         val entity = UrlEntity(
             id = 1L, shortCode = "paused", longUrl = "https://example.com",
             createdAt = Instant.now(), clickCount = 0, isActive = false
@@ -136,13 +139,13 @@ class UrlServiceTest {
 
     @Test
     fun `getLongUrl still works when Redis fails on cache populate`() {
-        every { redisClient.getUrl("abc") } returns null
+        every { redisClient.get("short:abc") } returns null
         val entity = UrlEntity(
             id = 1L, shortCode = "abc", longUrl = "https://example.com",
             createdAt = Instant.now(), clickCount = 0
         )
         every { urlRepository.findByShortCode("abc") } returns entity
-        every { redisClient.saveUrl(any(), any()) } throws RedisOperationException("Connection refused")
+        every { redisClient.set(any(), any(), any()) } throws RedisOperationException("Connection refused")
 
         val result = urlService.getLongUrl("abc")
 
@@ -161,7 +164,7 @@ class UrlServiceTest {
 
         urlService.deleteUrl("abc", 42L)
 
-        verify { redisClient.deleteUrl("abc") }
+        verify { redisClient.delete("short:abc") }
         verify { urlRepository.delete(entity) }
     }
 

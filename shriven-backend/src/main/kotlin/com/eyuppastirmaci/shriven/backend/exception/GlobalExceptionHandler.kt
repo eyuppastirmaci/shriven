@@ -98,6 +98,17 @@ class GlobalExceptionHandler {
             .body(ErrorResponse(message = ex.message ?: "This link is currently paused", errorCode = "URL_PAUSED"))
     }
 
+    @ExceptionHandler(RateLimitExceededException::class)
+    fun handleRateLimitExceeded(ex: RateLimitExceededException): ResponseEntity<ErrorResponse> {
+        logger.warn("Rate limit exceeded")
+        val body = ErrorResponse(message = "Rate limit exceeded", errorCode = "RATE_LIMIT_EXCEEDED")
+        return ex.retryAfterSeconds?.let { seconds ->
+            ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", seconds.toString())
+                .body(body)
+        } ?: ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(body)
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleGenericError(ex: Exception): ResponseEntity<ErrorResponse> {
         logger.error("Unexpected error occurred", ex)

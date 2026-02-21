@@ -49,14 +49,26 @@
 - 🌍 **GeoIP & Device Tracking** Location, browser, and referrer analytics (country via [ip-api.com](https://ip-api.com); no sign-up or database file required).
 - 🐳 **Dockerized Infrastructure** One command spins up PostgreSQL, Redis, and Kafka (KRaft).
 - 📷 **QR Codes** Downloadable QR for every short link.
+- 🛡️ **Rate Limiting** IP-based throttling to prevent abuse.
 
 ## Planned Features
-- 🛡️ **Rate Limiting** IP-based throttling to prevent abuse.
 - 🔒 **Password-Protected Links** Restrict access to specific URLs.
 - 🤖 **Auto-tagging** Suggests tags from link metadata (title, description) and maps to your tag system.
 - 🔗 **Semantic duplicate detection** Warn when a new URL is very similar to an existing short link (same site, similar path).
 - ✏️ **Smart alias suggestion** Suggests a readable short alias from the destination URL (e.g. domain + topic).
 - 🔍 **Semantic search** Find links by meaning (e.g. "project docs", "payment links") using embeddings and vector search.
+
+### Rate limiting
+
+| Level | What it limits | Example |
+|-------|----------------|---------|
+| **Global** | Total requests per IP per minute across the API | 200/min |
+| **Per-action** | Requests to a specific endpoint (e.g. shorten, redirect) per IP | e.g. 10/min for shorten, 120/min for redirect |
+
+**Algorithm**
+
+- **Fixed window:** We count requests per IP in a time window (e.g. one minute). If the count goes over the limit, we respond with 429 and, when we can, a **Retry-After** header so the client knows when to try again.
+- **Fail-open:** If the rate-limit store (Redis) is unavailable, we allow the request and log a warning instead of blocking traffic.
 
 ## Getting Started
 

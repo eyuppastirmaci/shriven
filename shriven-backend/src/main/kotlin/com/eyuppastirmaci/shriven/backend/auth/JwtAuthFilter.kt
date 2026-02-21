@@ -5,12 +5,16 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.authority.SimpleGrantedAuthority
+import org.springframework.core.Ordered
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
-class JwtAuthFilter(private val jwtService: JwtService) : OncePerRequestFilter() {
+class JwtAuthFilter(private val jwtService: JwtService) : OncePerRequestFilter(), Ordered {
+
+    // Run after rate limit filter (-200) so we throttle requests before performing JWT validation.
+    override fun getOrder(): Int = -100
 
     override fun doFilterInternal(
         request: HttpServletRequest,

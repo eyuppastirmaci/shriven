@@ -2,6 +2,7 @@ package com.eyuppastirmaci.shriven.backend.aop
 
 import com.eyuppastirmaci.shriven.backend.analytics.dto.ClickEvent
 import com.eyuppastirmaci.shriven.backend.kafka.KafkaClient
+import com.eyuppastirmaci.shriven.backend.ratelimit.ClientIpResolver
 import jakarta.servlet.http.HttpServletRequest
 import org.aspectj.lang.JoinPoint
 import org.aspectj.lang.annotation.AfterReturning
@@ -12,7 +13,8 @@ import java.time.Instant
 @Aspect
 @Component
 class RedirectClickPublishAspect(
-    private val kafkaClient: KafkaClient
+    private val kafkaClient: KafkaClient,
+    private val clientIpResolver: ClientIpResolver
 ) {
 
     @AfterReturning(
@@ -25,7 +27,7 @@ class RedirectClickPublishAspect(
         val shortCode = args[0] as? String ?: return
         val request = args[1] as? HttpServletRequest ?: return
 
-        val ip = clientIp(request)
+        val ip = clientIpResolver.resolve(request)
         val userAgent = request.getHeader("User-Agent")?.takeIf { it.isNotBlank() }
         val referrer = request.getHeader("Referer")?.takeIf { it.isNotBlank() }
 
@@ -37,15 +39,5 @@ class RedirectClickPublishAspect(
             referrer = referrer
         )
         kafkaClient.sendClickEvent(event)
-    }
-
-    private fun clientIp(request: HttpServletRequest): String? {
-        val forwarded = request.getHeader("X-Forwarded-For")
-        if (!forwarded.isNullOrBlank()) {
-            return forwarded.split(",").firstOrNull()?.trim()?.takeIf { it.isNotBlank() }
-        }
-        val realIp = request.getHeader("X-Real-IP")
-        if (!realIp.isNullOrBlank()) return realIp.trim()
-        return request.remoteAddr?.takeIf { it.isNotBlank() }
     }
 }

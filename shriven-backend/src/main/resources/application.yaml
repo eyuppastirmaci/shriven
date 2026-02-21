@@ -36,6 +36,12 @@ app:
   base-url: http://localhost:8081
   cache:
     ttl: 24h
+  rate-limit:
+    global-requests-per-minute: 200
+    window-seconds: 60
+    whitelist-paths:
+      - /actuator/health
+      - /actuator/info
 
 cors:
   allowed-origins:

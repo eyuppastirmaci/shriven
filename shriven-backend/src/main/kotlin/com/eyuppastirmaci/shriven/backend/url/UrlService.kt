@@ -7,6 +7,7 @@ import com.eyuppastirmaci.shriven.backend.exception.UrlExpiredException
 import com.eyuppastirmaci.shriven.backend.exception.UrlNotFoundException
 import com.eyuppastirmaci.shriven.backend.exception.UrlPausedException
 import com.eyuppastirmaci.shriven.backend.properties.AppProperties
+import com.eyuppastirmaci.shriven.backend.properties.CacheProperties
 import com.eyuppastirmaci.shriven.backend.redis.RedisClient
 import com.eyuppastirmaci.shriven.backend.snowflake.Base62Encoder
 import com.eyuppastirmaci.shriven.backend.snowflake.SnowflakeIdGenerator
@@ -28,11 +29,15 @@ class UrlService(
     private val snowflakeIdGenerator: SnowflakeIdGenerator,
     private val base62Encoder: Base62Encoder,
     private val redisClient: RedisClient,
+    private val cacheProperties: CacheProperties,
     private val appProperties: AppProperties
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UrlService::class.java)
+        private const val URL_CACHE_KEY_PREFIX = "short:"
     }
+
+    private fun urlCacheKey(shortCode: String): String = "$URL_CACHE_KEY_PREFIX$shortCode"
 
     @Transactional
     fun shortenUrl(request: ShortenUrlRequest, userId: Long? = null): UrlEntity {
@@ -84,7 +89,7 @@ class UrlService(
         )
 
         val savedEntity = urlRepository.save(entity)
-        redisClient.saveUrl(shortCode, request.longUrl)
+        redisClient.set(urlCacheKey(shortCode), request.longUrl, cacheProperties.ttl.toMillis())
 
         return savedEntity
     }
@@ -96,7 +101,7 @@ class UrlService(
      * Click events are published by RedirectClickPublishAspect after successful redirect.
      */
     fun getLongUrl(shortCode: String): String {
-        val cachedUrl = redisClient.getUrl(shortCode)
+        val cachedUrl = redisClient.get(urlCacheKey(shortCode))
         if (!cachedUrl.isNullOrEmpty()) {
             return cachedUrl
         }
@@ -115,7 +120,7 @@ class UrlService(
         }
 
         try {
-            redisClient.saveUrl(shortCode, entity.longUrl)
+            redisClient.set(urlCacheKey(shortCode), entity.longUrl, cacheProperties.ttl.toMillis())
         } catch (e: Exception) {
             logger.warn("Failed to populate cache for $shortCode", e)
         }
@@ -148,10 +153,10 @@ class UrlService(
             if (urlRepository.existsByShortCode(newAlias)) {
                 throw AliasAlreadyTakenException("The alias '$newAlias' is already taken")
             }
-            redisClient.deleteUrl(entity.shortCode)
+            redisClient.delete(urlCacheKey(entity.shortCode))
             entity.shortCode = newAlias
             entity.isCustomAlias = true
-            redisClient.saveUrl(newAlias, entity.longUrl)
+            redisClient.set(urlCacheKey(newAlias), entity.longUrl, cacheProperties.ttl.toMillis())
         }
 
         when {
@@ -182,11 +187,11 @@ class UrlService(
 
         if (!active) {
             // Remove from cache so the hot path falls back to DB and sees the paused state
-            redisClient.deleteUrl(shortCode)
+            redisClient.delete(urlCacheKey(shortCode))
         } else {
             // Re-populate cache when reactivating
             try {
-                redisClient.saveUrl(shortCode, entity.longUrl)
+                redisClient.set(urlCacheKey(shortCode), entity.longUrl, cacheProperties.ttl.toMillis())
             } catch (e: Exception) {
                 logger.warn("Failed to re-populate cache for $shortCode after reactivation", e)
             }
@@ -204,7 +209,7 @@ class UrlService(
             throw AccessDeniedException("You do not have permission to delete this link")
         }
 
-        redisClient.deleteUrl(shortCode)
+        redisClient.delete(urlCacheKey(shortCode))
         urlRepository.delete(entity)
     }
 

@@ -5,6 +5,7 @@ import com.eyuppastirmaci.shriven.backend.properties.CorsProperties
 import com.eyuppastirmaci.shriven.backend.properties.Base62Properties
 import com.eyuppastirmaci.shriven.backend.properties.CacheProperties
 import com.eyuppastirmaci.shriven.backend.properties.JwtProperties
+import com.eyuppastirmaci.shriven.backend.properties.RateLimitProperties
 import com.eyuppastirmaci.shriven.backend.properties.SnowflakeProperties
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -17,7 +18,8 @@ import org.springframework.boot.runApplication
 	AppProperties::class,
 	CorsProperties::class,
 	CacheProperties::class,
-	JwtProperties::class
+	JwtProperties::class,
+	RateLimitProperties::class
 )
 class ShrivenBackendApplication
 
