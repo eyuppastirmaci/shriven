@@ -6,14 +6,17 @@ import {
   OnInit,
   PLATFORM_ID,
   inject,
-  signal
+  signal,
+  effect
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AnalyticsService, GeoStatItem } from '../../services/analytics.service';
+import { ThemeService } from '../../services/theme.service';
 import { getCentroid } from '../country-centroids';
 // Leaflet is loaded dynamically in the browser to avoid SSR issues
 type LeafletMap = import('leaflet').Map;
 type LeafletCircleMarker = import('leaflet').CircleMarker;
+type LeafletTileLayer = import('leaflet').TileLayer;
 
 @Component({
   selector: 'app-analytics-map',
@@ -25,6 +28,7 @@ export class AnalyticsMapComponent implements OnInit, OnChanges, OnDestroy {
   @Input({ required: true }) shortCode!: string;
 
   private readonly analyticsService = inject(AnalyticsService);
+  private readonly themeService = inject(ThemeService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   protected readonly geoStats = signal<GeoStatItem[]>([]);
@@ -32,10 +36,49 @@ export class AnalyticsMapComponent implements OnInit, OnChanges, OnDestroy {
   protected readonly error = signal<string | null>(null);
 
   private map: LeafletMap | null = null;
+  private tileLayer: LeafletTileLayer | null = null;
   private markers: LeafletCircleMarker[] = [];
 
   private readonly CARTODB_DARK =
     'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+  private readonly CARTODB_LIGHT =
+    'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+
+  constructor() {
+    effect(() => {
+      this.themeService.theme();
+      if (this.isBrowser && this.map && this.tileLayer) {
+        this.updateMapTiles();
+      }
+    });
+  }
+
+  private getResolvedTheme(): 'dark' | 'light' {
+    const t = this.themeService.theme();
+    if (t !== 'system') return t;
+    return typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
+  }
+
+  private getTileUrl(theme: 'dark' | 'light'): string {
+    return theme === 'dark' ? this.CARTODB_DARK : this.CARTODB_LIGHT;
+  }
+
+  private updateMapTiles(): void {
+    if (!this.map) return;
+    import('leaflet').then((L) => {
+      if (!this.map || !this.tileLayer) return;
+      this.tileLayer.remove();
+      this.tileLayer = null;
+      const theme = this.getResolvedTheme();
+      this.tileLayer = L.tileLayer(this.getTileUrl(theme), {
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
+        maxZoom: 19
+      }).addTo(this.map);
+    });
+  }
 
   ngOnInit(): void {
     this.loadGeoStats();
@@ -85,7 +128,8 @@ export class AnalyticsMapComponent implements OnInit, OnChanges, OnDestroy {
       zoomControl: true
     });
     L.control.zoom({ position: 'topright' }).addTo(this.map!);
-    L.tileLayer(this.CARTODB_DARK, {
+    const theme = this.getResolvedTheme();
+    this.tileLayer = L.tileLayer(this.getTileUrl(theme), {
       attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
       maxZoom: 19
     }).addTo(this.map!);
@@ -123,6 +167,8 @@ export class AnalyticsMapComponent implements OnInit, OnChanges, OnDestroy {
   private destroyMap(): void {
     this.markers.forEach((m) => m.remove());
     this.markers = [];
+    this.tileLayer?.remove();
+    this.tileLayer = null;
     this.map?.remove();
     this.map = null;
   }
