@@ -10,10 +10,12 @@ import {
   Link2,
   Loader,
   LucideAngularModule,
+  QrCode,
   ShieldCheck,
   Zap
 } from 'lucide-angular';
 import { AuthService } from '../services/auth.service';
+import { QrCodeService } from '../services/qr-code.service';
 import { ShortenUrlResponse, UrlShortenerService, UserUrlResponse } from '../services/url-shortener.service';
 import { ToastService } from '../shared/toast/toast.service';
 import { ShortenerAdvancedOptionsComponent } from '../shared/shortener-advanced-options/shortener-advanced-options';
@@ -40,10 +42,12 @@ export class Home implements OnDestroy {
   protected readonly checkIcon = Check;
   protected readonly chevronDownIcon = ChevronDown;
   protected readonly chevronUpIcon = ChevronUp;
+  protected readonly qrCodeIcon = QrCode;
 
   protected readonly authService = inject(AuthService);
   private readonly urlShortenerService = inject(UrlShortenerService);
   private readonly toastService = inject(ToastService);
+  private readonly qrCodeService = inject(QrCodeService);
 
   protected readonly longUrl = signal('');
   protected readonly isLoading = signal(false);
@@ -151,6 +155,14 @@ export class Home implements OnDestroy {
       this.copied.set(true);
       if (this.copyTimeout) clearTimeout(this.copyTimeout);
       this.copyTimeout = setTimeout(() => this.copied.set(false), 2000);
+    }
+  }
+
+  protected onDownloadQr(): void {
+    const url = this.shortUrl();
+    const code = this.shortCode();
+    if (url && code) {
+      this.qrCodeService.downloadQr(url, code);
     }
   }
 }

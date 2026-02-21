@@ -48,9 +48,9 @@
 - 🔗 **Duplicate Detection** Warns when you already have a short link for the same URL.
 - 🌍 **GeoIP & Device Tracking** Location, browser, and referrer analytics (country via [ip-api.com](https://ip-api.com); no sign-up or database file required).
 - 🐳 **Dockerized Infrastructure** One command spins up PostgreSQL, Redis, and Kafka (KRaft).
+- 📷 **QR Codes** Downloadable QR for every short link.
 
 ## Planned Features
-- 📷 **QR Codes** Downloadable QR for every short link.
 - 🛡️ **Rate Limiting** IP-based throttling to prevent abuse.
 - 🔒 **Password-Protected Links** Restrict access to specific URLs.
 - 🤖 **Auto-tagging** Suggests tags from link metadata (title, description) and maps to your tag system.

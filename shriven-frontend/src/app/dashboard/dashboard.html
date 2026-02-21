@@ -96,6 +96,14 @@
             </a>
             <button
               class="icon-btn"
+              appTooltip="Download QR"
+              tooltipPosition="top"
+              (click)="onDownloadQr(url)"
+            >
+              <lucide-icon [img]="qrCodeIcon" [size]="15" />
+            </button>
+            <button
+              class="icon-btn"
               appTooltip="Edit"
               tooltipPosition="top"
               (click)="onOpenEdit(url)"

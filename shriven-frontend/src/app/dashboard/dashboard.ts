@@ -12,9 +12,11 @@ import {
   Pause,
   Pencil,
   Play,
+  QrCode,
   Trash2
 } from 'lucide-angular';
 import { AuthService } from '../services/auth.service';
+import { QrCodeService } from '../services/qr-code.service';
 import { TagService } from '../services/tag.service';
 import { UrlShortenerService, UserUrlResponse } from '../services/url-shortener.service';
 import { ToastService } from '../shared/toast/toast.service';
@@ -50,9 +52,11 @@ export class Dashboard implements OnInit, OnDestroy {
   protected readonly pauseIcon = Pause;
   protected readonly playIcon = Play;
   protected readonly pencilIcon = Pencil;
+  protected readonly qrCodeIcon = QrCode;
 
   protected readonly authService = inject(AuthService);
   private readonly urlService = inject(UrlShortenerService);
+  private readonly qrCodeService = inject(QrCodeService);
   private readonly tagService = inject(TagService);
   private readonly toastService = inject(ToastService);
 
@@ -111,6 +115,10 @@ export class Dashboard implements OnInit, OnDestroy {
     if (this.copyTimeout) clearTimeout(this.copyTimeout);
     this.copiedCode.set(shortCode);
     this.copyTimeout = setTimeout(() => this.copiedCode.set(null), 2000);
+  }
+
+  protected onDownloadQr(url: UserUrlResponse): void {
+    this.qrCodeService.downloadQr(url.shortUrl, url.shortCode);
   }
 
   protected onDelete(shortCode: string): void {

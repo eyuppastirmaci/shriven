@@ -80,10 +80,16 @@
             }
           </button>
         </div>
-        <a class="stats-link" [routerLink]="['/stats', shortCode()]">
-          <lucide-icon [img]="chartBarIcon" [size]="16" />
-          View Stats
-        </a>
+        <div class="result-actions">
+          <a class="stats-link" [routerLink]="['/stats', shortCode()]">
+            <lucide-icon [img]="chartBarIcon" [size]="16" />
+            View Stats
+          </a>
+          <button type="button" class="stats-link" (click)="onDownloadQr()">
+            <lucide-icon [img]="qrCodeIcon" [size]="16" />
+            Download QR
+          </button>
+        </div>
       </div>
     }
 
