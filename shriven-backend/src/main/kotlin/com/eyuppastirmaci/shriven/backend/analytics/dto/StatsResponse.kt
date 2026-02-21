@@ -5,10 +5,16 @@ import java.time.LocalDate
 data class StatsResponse(
     val shortCode: String,
     val totalClicks: Long,
-    val dailyStats: List<DailyStat>
+    val dailyStats: List<DailyStat>,
+    val weeklyStats: List<WeeklyStat>
 )
 
 data class DailyStat(
     val date: LocalDate,
+    val clicks: Long
+)
+
+data class WeeklyStat(
+    val weekStart: LocalDate,
     val clicks: Long
 )

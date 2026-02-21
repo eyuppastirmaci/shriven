@@ -1,5 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import {
   ChartBar,
   Copy,
@@ -9,6 +10,7 @@ import {
   ShieldCheck,
   Zap
 } from 'lucide-angular';
+import { AuthService } from '../services/auth.service';
 import { UrlShortenerService } from '../services/url-shortener.service';
 import { ToastService } from '../shared/toast/toast.service';
 
@@ -17,7 +19,8 @@ import { ToastService } from '../shared/toast/toast.service';
   standalone: true,
   imports: [
     FormsModule,
-    LucideAngularModule
+    LucideAngularModule,
+    RouterLink
   ],
   templateUrl: './home.html',
   styleUrl: './home.css'
@@ -29,6 +32,7 @@ export class Home {
   protected readonly zapIcon = Zap;
   protected readonly chartBarIcon = ChartBar;
   protected readonly shieldCheckIcon = ShieldCheck;
+  protected readonly authService = inject(AuthService);
   private readonly urlShortenerService = inject(UrlShortenerService);
   private readonly toastService = inject(ToastService);
 
@@ -36,6 +40,7 @@ export class Home {
   protected readonly isLoading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly shortUrl = signal<string | null>(null);
+  protected readonly shortCode = signal<string | null>(null);
 
   get isValidUrl(): boolean {
     const url = this.longUrl();
@@ -61,6 +66,7 @@ export class Home {
     this.urlShortenerService.shortenUrl({ longUrl: this.longUrl() }).subscribe({
       next: (response) => {
         this.shortUrl.set(response.shortUrl);
+        this.shortCode.set(response.shortCode);
         this.isLoading.set(false);
         this.longUrl.set('');
         this.toastService.show('Short link created!', 'success');

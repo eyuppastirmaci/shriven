@@ -34,5 +34,8 @@ data class UrlEntity(
     val expiresAt: Instant? = null,
 
     @Column(name = "click_count", nullable = false)
-    var clickCount: Long = 0
+    var clickCount: Long = 0,
+
+    @Column(name = "user_id")
+    val userId: Long? = null
 )

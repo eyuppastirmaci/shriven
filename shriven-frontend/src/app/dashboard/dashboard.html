@@ -1,0 +1,91 @@
+<div class="dashboard">
+  <div class="dashboard-header">
+    <div class="dashboard-title">
+      <lucide-icon [img]="dashboardIcon" [size]="24" />
+      <h2>My Links</h2>
+    </div>
+    <div class="dashboard-actions">
+      <span class="user-email">{{ authService.currentEmail() }}</span>
+      <a routerLink="/" class="action-btn">
+        <lucide-icon [img]="linkIcon" [size]="15" />
+        New Link
+      </a>
+      <button class="action-btn danger" (click)="onLogout()">
+        <lucide-icon [img]="logoutIcon" [size]="15" />
+        Sign out
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading()) {
+    <div class="state-box">
+      <div class="spinner"></div>
+      <p>Loading your links...</p>
+    </div>
+  } @else if (error()) {
+    <div class="state-box error">
+      <p>{{ error() }}</p>
+      <button class="retry-btn" (click)="loadUrls()">Retry</button>
+    </div>
+  } @else if (urls().length === 0) {
+    <div class="state-box empty">
+      <lucide-icon [img]="linkIcon" [size]="40" class="empty-icon" />
+      <p>You haven't created any links yet.</p>
+      <a routerLink="/" class="action-btn">Create your first link</a>
+    </div>
+  } @else {
+    <div class="link-list">
+      @for (url of urls(); track url.shortCode) {
+        <div class="link-card">
+          <div class="link-main">
+            <div class="link-short">
+              <a [href]="url.shortUrl" target="_blank" rel="noopener noreferrer" class="short-url">
+                {{ url.shortUrl }}
+                <lucide-icon [img]="externalLinkIcon" [size]="12" />
+              </a>
+              <span class="click-badge">{{ url.clickCount }} clicks</span>
+            </div>
+            <div class="link-long" [title]="url.longUrl">{{ url.longUrl }}</div>
+            <div class="link-meta">Created {{ formatDate(url.createdAt) }}</div>
+          </div>
+          <div class="link-buttons">
+            <button
+              class="icon-btn"
+              [class.copied]="copiedCode() === url.shortCode"
+              appTooltip="{{ copiedCode() === url.shortCode ? 'Copied!' : 'Copy' }}"
+              tooltipPosition="top"
+              (click)="onCopy(url.shortUrl, url.shortCode)"
+            >
+              @if (copiedCode() === url.shortCode) {
+                <lucide-icon [img]="checkIcon" [size]="15" />
+              } @else {
+                <lucide-icon [img]="copyIcon" [size]="15" />
+              }
+            </button>
+            <a
+              class="icon-btn"
+              [routerLink]="['/stats', url.shortCode]"
+              appTooltip="View Stats"
+              tooltipPosition="top"
+            >
+              <lucide-icon [img]="statsIcon" [size]="15" />
+            </a>
+            <button
+              class="icon-btn danger"
+              appTooltip="Delete"
+              tooltipPosition="top"
+              [disabled]="deletingCode() === url.shortCode"
+              (click)="onDelete(url.shortCode)"
+            >
+              @if (deletingCode() === url.shortCode) {
+                <span class="mini-spinner"></span>
+              } @else {
+                <lucide-icon [img]="trashIcon" [size]="15" />
+              }
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

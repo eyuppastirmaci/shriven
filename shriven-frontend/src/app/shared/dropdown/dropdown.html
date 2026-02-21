@@ -1,0 +1,28 @@
+<div class="dropdown" [class.open]="isOpen()">
+  <button class="dropdown-trigger" type="button" (click)="toggle()">
+    @if (selectedItem()?.icon) {
+      <lucide-icon [img]="selectedItem()!.icon" [size]="15" />
+    }
+    <span>{{ selectedItem()?.label ?? placeholder }}</span>
+    <lucide-icon [img]="chevronIcon" [size]="14" class="chevron" />
+  </button>
+
+  @if (isOpen()) {
+    <div class="dropdown-menu">
+      @for (item of items; track item.value) {
+        <button
+          class="dropdown-item"
+          [class.active]="item.value === selected"
+          type="button"
+          (click)="select(item.value)"
+        >
+          <lucide-icon [img]="item.icon" [size]="15" />
+          <span>{{ item.label }}</span>
+          @if (item.value === selected) {
+            <lucide-icon [img]="checkIcon" [size]="13" class="check-icon" />
+          }
+        </button>
+      }
+    </div>
+  }
+</div>

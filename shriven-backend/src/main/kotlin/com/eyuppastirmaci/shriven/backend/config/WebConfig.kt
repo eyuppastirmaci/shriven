@@ -1,7 +1,9 @@
 package com.eyuppastirmaci.shriven.backend.config
 
+import com.eyuppastirmaci.shriven.backend.analytics.StatsPeriod
 import com.eyuppastirmaci.shriven.backend.properties.CorsProperties
 import org.springframework.context.annotation.Configuration
+import org.springframework.format.FormatterRegistry
 import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
@@ -9,6 +11,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 class WebConfig(
     private val corsProperties: CorsProperties
 ) : WebMvcConfigurer {
+
+    override fun addFormatters(registry: FormatterRegistry) {
+        registry.addConverter(String::class.java, StatsPeriod::class.java, StatsPeriod::fromString)
+    }
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry.addMapping("/**")

@@ -45,6 +45,18 @@
             Copy
           </button>
         </div>
+        <a class="stats-link" [routerLink]="['/stats', shortCode()]">
+          <lucide-icon [img]="chartBarIcon" [size]="16" />
+          View Stats
+        </a>
+      </div>
+    }
+
+    @if (!authService.isLoggedIn()) {
+      <div class="auth-hint">
+        <lucide-icon [img]="shieldCheckIcon" [size]="15" />
+        <a routerLink="/login">Sign in</a>
+        <span>to manage and track your links</span>
       </div>
     }
   </div>

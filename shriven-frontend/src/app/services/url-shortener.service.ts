@@ -16,6 +16,15 @@ export interface ShortenUrlResponse {
   expiresAt?: string;
 }
 
+export interface UserUrlResponse {
+  shortCode: string;
+  shortUrl: string;
+  longUrl: string;
+  clickCount: number;
+  createdAt: string;
+  expiresAt?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -25,5 +34,13 @@ export class UrlShortenerService {
 
   shortenUrl(request: ShortenUrlRequest): Observable<ShortenUrlResponse> {
     return this.http.post<ShortenUrlResponse>(`${this.apiUrl}/shorten`, request);
+  }
+
+  getUserUrls(): Observable<UserUrlResponse[]> {
+    return this.http.get<UserUrlResponse[]>(`${this.apiUrl}/urls`);
+  }
+
+  deleteUrl(shortCode: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/urls/${shortCode}`);
   }
 }

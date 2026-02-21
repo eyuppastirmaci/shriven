@@ -1,0 +1,84 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <lucide-icon [img]="logoIcon" [size]="36" class="auth-logo" />
+      <h1>Create an account</h1>
+      <p>Start managing your links today</p>
+    </div>
+
+    <form class="auth-form" (ngSubmit)="onSubmit()">
+      @if (error()) {
+        <div class="auth-error">{{ error() }}</div>
+      }
+
+      <div class="field-group">
+        <label for="email">Email</label>
+        <div class="input-wrap">
+          <lucide-icon [img]="mailIcon" [size]="16" class="input-icon" />
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            autocomplete="email"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <lucide-icon [img]="lockIcon" [size]="16" class="input-icon" />
+          <input
+            id="password"
+            type="password"
+            placeholder="At least 8 characters"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <div class="input-wrap" [class.mismatch]="confirmPassword() && !passwordsMatch">
+          <lucide-icon [img]="lockIcon" [size]="16" class="input-icon" />
+          <input
+            id="confirmPassword"
+            type="password"
+            placeholder="Repeat your password"
+            [ngModel]="confirmPassword()"
+            (ngModelChange)="confirmPassword.set($event)"
+            name="confirmPassword"
+            autocomplete="new-password"
+            required
+          />
+        </div>
+        @if (confirmPassword() && !passwordsMatch) {
+          <span class="field-error">Passwords do not match</span>
+        }
+      </div>
+
+      <button type="submit" class="auth-btn" [disabled]="isLoading() || !passwordsMatch">
+        @if (isLoading()) {
+          <span class="spinner"></span>
+          Creating account...
+        } @else {
+          <lucide-icon [img]="registerIcon" [size]="16" />
+          Create account
+        }
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Already have an account?
+      <a routerLink="/login">Sign in</a>
+    </p>
+  </div>
+</div>

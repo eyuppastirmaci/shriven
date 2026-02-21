@@ -12,8 +12,20 @@ interface UrlRepository : JpaRepository<UrlEntity, Long> {
 
     fun findByShortCode(shortCode: String): UrlEntity?
 
+    fun findAllByUserIdOrderByCreatedAtDesc(userId: Long): List<UrlEntity>
+
+    fun findByShortCodeAndUserId(shortCode: String, userId: Long): UrlEntity?
+
     @Modifying
     @Transactional
     @Query("UPDATE UrlEntity u SET u.clickCount = u.clickCount + 1 WHERE u.shortCode = :shortCode")
     fun incrementClickCount(@Param("shortCode") shortCode: String)
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE UrlEntity u SET u.clickCount = u.clickCount + :delta WHERE u.shortCode = :shortCode")
+    fun incrementClickCountBy(
+        @Param("shortCode") shortCode: String,
+        @Param("delta") delta: Long
+    )
 }

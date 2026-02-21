@@ -1,0 +1,92 @@
+<aside class="sidebar" [class.collapsed]="collapsed()">
+
+  <div class="sidebar-main">
+
+    <!-- Header row: logo + toggle -->
+    <div class="sidebar-header">
+      @if (!collapsed()) {
+        <span class="sidebar-brand">Shriven</span>
+      }
+      <button
+        type="button"
+        class="sidebar-toggle"
+        (click)="toggleCollapse()"
+        [appTooltip]="collapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        tooltipPosition="right"
+        aria-label="Toggle sidebar"
+      >
+        <lucide-icon [img]="collapsed() ? expandIcon : collapseIcon" [size]="16" />
+      </button>
+    </div>
+
+    <!-- Nav: CTA + links -->
+    <div class="sidebar-top">
+
+    <a
+      routerLink="/"
+      class="sidebar-new-link-btn"
+      [appTooltip]="collapsed() ? 'Shorten a Link' : ''"
+      tooltipPosition="right"
+    >
+      <app-sidebar-icon
+        [icon]="newLinkIcon"
+        label="Shorten a Link"
+        [collapsed]="collapsed()"
+        [iconSize]="18"
+      />
+    </a>
+
+    <nav class="sidebar-nav">
+      <a
+        routerLink="/dashboard"
+        routerLinkActive="active"
+        class="sidebar-nav-item"
+        ariaCurrentWhenActive="page"
+        [appTooltip]="collapsed() ? 'Dashboard' : ''"
+        tooltipPosition="right"
+      >
+        <app-sidebar-icon
+          [icon]="dashboardIcon"
+          label="Dashboard"
+          [collapsed]="collapsed()"
+          [iconSize]="18"
+        />
+      </a>
+    </nav>
+
+  </div>
+
+  </div><!-- /sidebar-main -->
+
+  <!-- Bottom: user -->
+  <div class="sidebar-footer" (click)="$event.stopPropagation()">
+
+    @if (userMenuOpen()) {
+      <div class="user-popup">
+        <button type="button" class="user-popup-item danger" (click)="logout($event)">
+          <lucide-icon [img]="logoutIcon" [size]="16" />
+          @if (!collapsed()) {
+            <span>Logout</span>
+          }
+        </button>
+      </div>
+    }
+
+    <button
+      type="button"
+      class="sidebar-user"
+      [class.open]="userMenuOpen()"
+      (click)="toggleUserMenu($event)"
+      [appTooltip]="collapsed() ? (username() ?? '') : ''"
+      tooltipPosition="right"
+      aria-label="User menu"
+    >
+      <div class="sidebar-avatar">{{ avatarInitial() }}</div>
+      @if (!collapsed()) {
+        <span class="sidebar-username">{{ username() }}</span>
+      }
+    </button>
+
+  </div>
+
+</aside>

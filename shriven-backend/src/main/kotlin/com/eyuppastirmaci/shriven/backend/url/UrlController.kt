@@ -1,16 +1,21 @@
 package com.eyuppastirmaci.shriven.backend.url
 
+import com.eyuppastirmaci.shriven.backend.auth.AuthPrincipal
 import com.eyuppastirmaci.shriven.backend.properties.AppProperties
 import com.eyuppastirmaci.shriven.backend.url.dto.request.ShortenUrlRequest
 import com.eyuppastirmaci.shriven.backend.url.dto.response.ShortenUrlResponse
+import com.eyuppastirmaci.shriven.backend.url.dto.response.UserUrlResponse
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 
@@ -21,8 +26,11 @@ class UrlController(
 ) {
 
     @PostMapping("/api/shorten")
-    fun shortenUrl(@Valid @RequestBody request: ShortenUrlRequest): ResponseEntity<ShortenUrlResponse> {
-        val entity = urlService.shortenUrl(request)
+    fun shortenUrl(
+        @Valid @RequestBody request: ShortenUrlRequest,
+        @AuthenticationPrincipal principal: AuthPrincipal?
+    ): ResponseEntity<ShortenUrlResponse> {
+        val entity = urlService.shortenUrl(request, principal?.userId)
 
         val response = ShortenUrlResponse(
             shortUrl = "${appProperties.baseUrl}/${entity.shortCode}",
@@ -40,7 +48,6 @@ class UrlController(
         @PathVariable shortCode: String,
         request: HttpServletRequest
     ): ResponseEntity<Void> {
-
         val userAgent = request.getHeader("User-Agent")
         val ipAddress = request.remoteAddr
 
@@ -50,5 +57,31 @@ class UrlController(
             .status(HttpStatus.FOUND)
             .location(URI.create(longUrl))
             .build()
+    }
+
+    @GetMapping("/api/urls")
+    fun getUserUrls(
+        @AuthenticationPrincipal principal: AuthPrincipal
+    ): ResponseEntity<List<UserUrlResponse>> {
+        val urls = urlService.getUserUrls(principal.userId).map { entity ->
+            UserUrlResponse(
+                shortCode = entity.shortCode,
+                shortUrl = "${appProperties.baseUrl}/${entity.shortCode}",
+                longUrl = entity.longUrl,
+                clickCount = entity.clickCount,
+                createdAt = entity.createdAt.toString(),
+                expiresAt = entity.expiresAt?.toString()
+            )
+        }
+        return ResponseEntity.ok(urls)
+    }
+
+    @DeleteMapping("/api/urls/{shortCode}")
+    fun deleteUrl(
+        @PathVariable shortCode: String,
+        @AuthenticationPrincipal principal: AuthPrincipal
+    ): ResponseEntity<Void> {
+        urlService.deleteUrl(shortCode, principal.userId)
+        return ResponseEntity.noContent().build()
     }
 }

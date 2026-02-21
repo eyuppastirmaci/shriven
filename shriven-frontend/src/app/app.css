@@ -1,10 +1,26 @@
+.theme-dropdown-anchor {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 500;
+}
+
 .container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2rem;
-  background: #0a0a0a;
+  background: var(--bg-page);
+  transition: padding-left 0.2s ease;
+}
+
+.container.with-sidebar {
+  padding-left: calc(220px + 2rem);
+}
+
+.container.with-sidebar.sidebar-collapsed {
+  padding-left: calc(60px + 2rem);
 }
 
 main {
@@ -13,5 +29,33 @@ main {
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 900px;
+  max-width: 1100px;
+}
+
+@media (max-width: 768px) {
+  .container.with-sidebar,
+  .container.with-sidebar.sidebar-collapsed {
+    padding-left: 2rem;
+  }
+}
+
+.app-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-page);
+}
+
+.app-loading-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid var(--border-default);
+  border-top-color: var(--text-primary);
+  border-radius: 50%;
+  animation: app-spin 0.6s linear infinite;
+}
+
+@keyframes app-spin {
+  to { transform: rotate(360deg); }
 }

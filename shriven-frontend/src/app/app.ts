@@ -1,13 +1,20 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Header } from './header/header';
 import { Footer } from './footer/footer';
 import { Toast } from './shared/toast/toast';
+import { ThemeToggle } from './shared/theme-toggle/theme-toggle';
+import { Sidebar } from './sidebar/sidebar';
+import { AuthService } from './services/auth.service';
+import { SidebarService } from './sidebar/sidebar.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer, Toast],
+  imports: [RouterOutlet, Header, Footer, Toast, ThemeToggle, Sidebar],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
-export class App {}
+export class App {
+  protected readonly authService = inject(AuthService);
+  protected readonly sidebarService = inject(SidebarService);
+}

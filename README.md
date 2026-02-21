@@ -31,19 +31,19 @@ A simple, distributed URL shortener built with Kotlin and Angular. It uses Snowf
 
 ### Infrastructure & Messaging
 - **Asynchronous Event Publishing:** Publishes `ClickEvents` to Kafka topics during the redirect phase.
+- **Kafka Consumer:** Background processing that consumes and aggregates click events from the `url-clicks` topic.
+- **Batch Processing:** Kafka batch listener aggregates events in memory per poll cycle for efficient database writes.
 - **Dockerized Environment:** Fully containerized setup for PostgreSQL, Redis, and Kafka (KRaft).
 
-## Planned Features
-
-### Analytics Engine (In Progress)
-- **Kafka Consumer:** Implement background processing to consume and aggregate click events.
-- **Batch Processing:** Buffer events in memory for efficient database writes.
+### Analytics Engine
 - **Data Visualization:** Expose endpoints for daily/weekly click statistics.
 
 ### User Management
 - **Authentication:** JWT-based user registration and login system.
 - **Link Ownership:** Associate created links with user accounts for private management.
 - **User Dashboard:** Dedicated interface for users to view and manage their history.
+
+## Planned Features
 
 ### Customization & Control
 - **Custom Aliases:** Allow users to define their own vanity URLs (e.g., `/my-link`).

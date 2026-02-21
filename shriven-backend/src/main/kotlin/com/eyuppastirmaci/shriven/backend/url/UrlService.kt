@@ -1,6 +1,7 @@
 package com.eyuppastirmaci.shriven.backend.url
 
 import com.eyuppastirmaci.shriven.backend.analytics.dto.ClickEvent
+import com.eyuppastirmaci.shriven.backend.exception.AccessDeniedException
 import com.eyuppastirmaci.shriven.backend.exception.UrlExpiredException
 import com.eyuppastirmaci.shriven.backend.exception.UrlNotFoundException
 import com.eyuppastirmaci.shriven.backend.kafka.KafkaClient
@@ -30,30 +31,28 @@ class UrlService(
      * Immediately caches the result in Redis to ensure subsequent reads are fast.
      *
      * @param request The request object containing the long URL and optional expiration.
+     * @param userId The ID of the authenticated user, or null for anonymous requests.
      * @return The persisted UrlEntity.
      */
     @Transactional
-    fun shortenUrl(request: ShortenUrlRequest): UrlEntity {
-        // Generate unique ID and encode to short code
+    fun shortenUrl(request: ShortenUrlRequest, userId: Long? = null): UrlEntity {
         val id = snowflakeIdGenerator.nextId()
         val shortCode = base62Encoder.encode(id)
 
-        // Parse expiration date if provided
         val expiresAt = request.expiresAt?.let { Instant.parse(it) }
 
-        // Create and save entity
         val entity = UrlEntity(
             id = id,
             shortCode = shortCode,
             longUrl = request.longUrl,
             createdAt = Instant.now(),
             expiresAt = expiresAt,
-            clickCount = 0
+            clickCount = 0,
+            userId = userId
         )
 
         val savedEntity = urlRepository.save(entity)
 
-        // Write-Through: Cache immediately
         redisClient.saveUrl(shortCode, request.longUrl)
 
         return savedEntity
@@ -74,19 +73,15 @@ class UrlService(
      * @throws UrlExpiredException if the link has passed its expiration date.
      */
     fun getLongUrl(shortCode: String, userAgent: String?, ipAddress: String?): String {
-        // Check Cache
         val cachedUrl = redisClient.getUrl(shortCode)
         if (!cachedUrl.isNullOrEmpty()) {
-            // FIRE AND FORGET: Send event to Kafka
             kafkaClient.sendClickEvent(ClickEvent(shortCode, Instant.now(), userAgent, ipAddress))
             return cachedUrl
         }
 
-        // Cache Miss -> DB Lookup
         val entity = urlRepository.findByShortCode(shortCode)
             ?: throw UrlNotFoundException("Short code not found: $shortCode")
 
-        // Check Expiry
         entity.expiresAt?.let { expiresAt ->
             if (Instant.now().isAfter(expiresAt)) {
                 redisClient.deleteUrl(shortCode)
@@ -94,12 +89,27 @@ class UrlService(
             }
         }
 
-        // Cache-Aside
         redisClient.saveUrl(shortCode, entity.longUrl)
 
-        // Analytics (Async)
         kafkaClient.sendClickEvent(ClickEvent(shortCode, Instant.now(), userAgent, ipAddress))
 
         return entity.longUrl
+    }
+
+    @Transactional(readOnly = true)
+    fun getUserUrls(userId: Long): List<UrlEntity> =
+        urlRepository.findAllByUserIdOrderByCreatedAtDesc(userId)
+
+    @Transactional
+    fun deleteUrl(shortCode: String, userId: Long) {
+        val entity = urlRepository.findByShortCode(shortCode)
+            ?: throw UrlNotFoundException("Short code not found: $shortCode")
+
+        if (entity.userId != userId) {
+            throw AccessDeniedException("You do not have permission to delete this link")
+        }
+
+        redisClient.deleteUrl(shortCode)
+        urlRepository.delete(entity)
     }
 }

@@ -1,11 +1,29 @@
-<div class="container">
-  <app-header />
+@if (authService.isAuthInitialized()) {
+  @if (authService.isLoggedIn()) {
+    <app-sidebar />
+  }
 
-  <main>
-    <router-outlet />
-  </main>
+  <div class="theme-dropdown-anchor">
+    <app-theme-toggle />
+  </div>
 
-  <app-footer />
-</div>
+  <div
+    class="container"
+    [class.with-sidebar]="authService.isLoggedIn()"
+    [class.sidebar-collapsed]="sidebarService.collapsed()"
+  >
+    <app-header />
 
-<app-toast />
+    <main>
+      <router-outlet />
+    </main>
+
+    <app-footer />
+  </div>
+
+  <app-toast />
+} @else {
+  <div class="app-loading">
+    <div class="app-loading-spinner"></div>
+  </div>
+}

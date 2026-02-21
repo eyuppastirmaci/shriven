@@ -1,0 +1,244 @@
+/* Shell */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 220px;
+  height: 100vh;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-default);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  z-index: 400;
+  padding: 1rem 0.75rem;
+  transition: width 0.22s ease;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+/* Main (header, nav grouped together at top) */
+.sidebar-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Header row */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  min-height: 2rem;
+  overflow: hidden;
+}
+
+.collapsed .sidebar-header {
+  justify-content: center;
+}
+
+.sidebar-brand {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+/* Toggle button */
+.sidebar-toggle {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border-default);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.sidebar-toggle:hover {
+  background: var(--bg-control);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+/* Top section */
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* Primary CTA */
+.sidebar-new-link-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-color);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-new-link-btn:hover {
+  background: var(--btn-primary-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-btn);
+}
+
+.sidebar-new-link-btn:active {
+  transform: translateY(0);
+}
+
+/* Nav */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sidebar-nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sidebar-nav-item:hover {
+  background: var(--bg-control);
+  color: var(--text-primary);
+}
+
+.sidebar-nav-item.active {
+  background: var(--bg-control);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Collapsed: centre-align icon-only items */
+.collapsed .sidebar-nav-item,
+.collapsed .sidebar-new-link-btn {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Bottom user section */
+.sidebar-footer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin: 0 -0.75rem -1rem;
+}
+
+/* Popup above user button */
+.user-popup {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 0.75rem;
+  right: 0.75rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-default);
+  border-radius: 10px;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.user-popup-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  background: transparent;
+  border: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.user-popup-item.danger {
+  color: var(--color-error);
+}
+
+.user-popup-item.danger:hover {
+  background: var(--color-error-bg);
+}
+
+/* User button */
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.15s;
+  width: 100%;
+  text-align: left;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar-user:hover,
+.sidebar-user.open {
+  background: var(--bg-control);
+}
+
+.collapsed .sidebar-user {
+  justify-content: center;
+  padding: 0.75rem 0;
+}
+
+/* Avatar */
+.sidebar-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--text-primary);
+  color: var(--text-inverse);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.sidebar-username {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

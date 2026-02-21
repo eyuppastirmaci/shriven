@@ -1,0 +1,64 @@
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-header">
+      <lucide-icon [img]="logoIcon" [size]="36" class="auth-logo" />
+      <h1>Welcome back</h1>
+      <p>Sign in to manage your links</p>
+    </div>
+
+    <form class="auth-form" (ngSubmit)="onSubmit()">
+      @if (error()) {
+        <div class="auth-error">{{ error() }}</div>
+      }
+
+      <div class="field-group">
+        <label for="email">Email</label>
+        <div class="input-wrap">
+          <lucide-icon [img]="mailIcon" [size]="16" class="input-icon" />
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            [ngModel]="email()"
+            (ngModelChange)="email.set($event)"
+            name="email"
+            autocomplete="email"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <lucide-icon [img]="lockIcon" [size]="16" class="input-icon" />
+          <input
+            id="password"
+            type="password"
+            placeholder="••••••••"
+            [ngModel]="password()"
+            (ngModelChange)="password.set($event)"
+            name="password"
+            autocomplete="current-password"
+            required
+          />
+        </div>
+      </div>
+
+      <button type="submit" class="auth-btn" [disabled]="isLoading()">
+        @if (isLoading()) {
+          <span class="spinner"></span>
+          Signing in...
+        } @else {
+          <lucide-icon [img]="loginIcon" [size]="16" />
+          Sign in
+        }
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      Don't have an account?
+      <a routerLink="/register">Create one</a>
+    </p>
+  </div>
+</div>

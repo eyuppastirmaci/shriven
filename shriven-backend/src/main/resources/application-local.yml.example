@@ -1,0 +1,32 @@
+server:
+  port: 8081
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  datasource:
+    url: jdbc:postgresql://localhost:5433/url_shortener
+    username: your_db_username
+    password: your_db_password
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+jwt:
+  secret: "your-base64-encoded-256-bit-secret-key"
+  expiration: 900000
+  refresh-expiration: 2592000000
+
+snowflake:
+  node-id: 1
+
+logging:
+  level:
+    com.eyuppastirmaci: DEBUG
