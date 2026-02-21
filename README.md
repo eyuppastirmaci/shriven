@@ -96,16 +96,6 @@ npm install
 ng serve
 ```
 
-### 4. Demo data for Analytics map (optional)
-
-To show sample country markers on the Analytics page (e.g. for screenshots):
-
-```bash
-docker exec -i project-shriven-postgres-1 psql -U user -d url_shortener < scripts/seed-geo-stats.sql
-```
-
-This upserts geo stats for the short codes `google` and `kWTP1FuRCU`; select one of those links on the Analytics page to see the map.
-
 ## Running Tests
 
 ```bash
