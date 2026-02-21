@@ -1,14 +1,17 @@
 package com.eyuppastirmaci.shriven.backend.url
 
-import com.eyuppastirmaci.shriven.backend.analytics.dto.ClickEvent
 import com.eyuppastirmaci.shriven.backend.exception.AccessDeniedException
+import com.eyuppastirmaci.shriven.backend.exception.DuplicateLinkException
 import com.eyuppastirmaci.shriven.backend.exception.RedisOperationException
 import com.eyuppastirmaci.shriven.backend.exception.UrlExpiredException
 import com.eyuppastirmaci.shriven.backend.exception.UrlNotFoundException
+import com.eyuppastirmaci.shriven.backend.exception.UrlPausedException
 import com.eyuppastirmaci.shriven.backend.kafka.KafkaClient
+import com.eyuppastirmaci.shriven.backend.properties.AppProperties
 import com.eyuppastirmaci.shriven.backend.redis.RedisClient
 import com.eyuppastirmaci.shriven.backend.snowflake.Base62Encoder
 import com.eyuppastirmaci.shriven.backend.snowflake.SnowflakeIdGenerator
+import com.eyuppastirmaci.shriven.backend.tag.TagRepository
 import com.eyuppastirmaci.shriven.backend.url.dto.request.ShortenUrlRequest
 import io.mockk.every
 import io.mockk.mockk
@@ -21,13 +24,16 @@ import kotlin.test.assertEquals
 class UrlServiceTest {
 
     private val urlRepository = mockk<UrlRepository>(relaxed = true)
+    private val tagRepository = mockk<TagRepository>(relaxed = true)
     private val snowflakeIdGenerator = mockk<SnowflakeIdGenerator>()
     private val base62Encoder = mockk<Base62Encoder>()
     private val redisClient = mockk<RedisClient>(relaxed = true)
     private val kafkaClient = mockk<KafkaClient>(relaxed = true)
+    private val appProperties = AppProperties(baseUrl = "https://sho.rt")
 
     private val urlService = UrlService(
-        urlRepository, snowflakeIdGenerator, base62Encoder, redisClient, kafkaClient
+        urlRepository, tagRepository, snowflakeIdGenerator, base62Encoder,
+        redisClient, kafkaClient, appProperties
     )
 
     // -- shortenUrl --
@@ -36,6 +42,7 @@ class UrlServiceTest {
     fun `shortenUrl creates entity and caches it`() {
         every { snowflakeIdGenerator.nextId() } returns 12345L
         every { base62Encoder.encode(12345L) } returns "abc"
+        every { urlRepository.findByLongUrlAndUserId(any(), any()) } returns null
         val request = ShortenUrlRequest(longUrl = "https://example.com")
         val savedEntity = UrlEntity(
             id = 12345L, shortCode = "abc", longUrl = "https://example.com",
@@ -49,6 +56,19 @@ class UrlServiceTest {
         assertEquals("https://example.com", result.longUrl)
         verify { urlRepository.save(any()) }
         verify { redisClient.saveUrl("abc", "https://example.com") }
+    }
+
+    @Test
+    fun `shortenUrl throws DuplicateLinkException when user already has a link for same URL`() {
+        val existingEntity = UrlEntity(
+            id = 999L, shortCode = "existing", longUrl = "https://example.com",
+            createdAt = Instant.now(), clickCount = 5, userId = 1L
+        )
+        every { urlRepository.findByLongUrlAndUserId("https://example.com", 1L) } returns existingEntity
+
+        assertThrows<DuplicateLinkException> {
+            urlService.shortenUrl(ShortenUrlRequest(longUrl = "https://example.com"), userId = 1L)
+        }
     }
 
     // -- getLongUrl --
@@ -101,6 +121,20 @@ class UrlServiceTest {
 
         assertThrows<UrlExpiredException> {
             urlService.getLongUrl("exp", null, null)
+        }
+    }
+
+    @Test
+    fun `getLongUrl throws UrlPausedException for paused URL`() {
+        every { redisClient.getUrl("paused") } returns null
+        val entity = UrlEntity(
+            id = 1L, shortCode = "paused", longUrl = "https://example.com",
+            createdAt = Instant.now(), clickCount = 0, isActive = false
+        )
+        every { urlRepository.findByShortCode("paused") } returns entity
+
+        assertThrows<UrlPausedException> {
+            urlService.getLongUrl("paused", null, null)
         }
     }
 

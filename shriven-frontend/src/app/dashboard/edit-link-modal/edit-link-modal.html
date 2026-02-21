@@ -1,0 +1,96 @@
+<app-modal
+  title="Edit Link"
+  [isOpen]="isOpen"
+  (close)="onClose()"
+>
+  <div class="edit-modal-fields">
+    <div class="modal-field">
+      <label class="modal-label">Custom alias</label>
+      <div class="alias-input-wrap">
+        <input
+          type="text"
+          class="modal-input"
+          [class.available]="editAliasAvailable() === true"
+          [class.taken]="editAliasAvailable() === false"
+          [class.invalid]="!!editAliasValidationMessage"
+          placeholder="e.g. my-brand"
+          [ngModel]="editAlias()"
+          (ngModelChange)="onEditAliasChange($event)"
+          maxlength="30"
+        />
+        <span class="alias-status">
+          @if (editAliasChecking()) {
+            <span class="alias-checking"></span>
+          } @else if (editAliasAvailable() === true) {
+            <lucide-icon [img]="checkIcon" [size]="14" class="status-ok" />
+          } @else if (editAliasAvailable() === false) {
+            <lucide-icon [img]="xIcon" [size]="14" class="status-err" />
+          }
+        </span>
+      </div>
+      @if (editAliasValidationMessage) {
+        <span class="field-hint error">{{ editAliasValidationMessage }}</span>
+      } @else if (editAliasAvailable() === false) {
+        <span class="field-hint error">This alias is already taken</span>
+      } @else if (editAliasAvailable() === true) {
+        <span class="field-hint ok">Available!</span>
+      } @else {
+        <span class="field-hint">Leave empty to keep current short code</span>
+      }
+    </div>
+
+    <div class="modal-field">
+      <label class="modal-label">Expiration date</label>
+      <input
+        type="date"
+        class="modal-input"
+        [min]="editMinDate"
+        [disabled]="editClearExpiration()"
+        [ngModel]="editExpiresAt()"
+        (ngModelChange)="editExpiresAt.set($event)"
+      />
+      @if (url()?.expiresAt) {
+        <label class="clear-expiry-label">
+          <input
+            type="checkbox"
+            [ngModel]="editClearExpiration()"
+            (ngModelChange)="editClearExpiration.set($event)"
+          />
+          Clear expiration (make permanent)
+        </label>
+      }
+    </div>
+
+    @if (userTags().length > 0) {
+      <div class="modal-field">
+        <label class="modal-label">Tags</label>
+        <div class="tag-checkboxes">
+          @for (tag of userTags(); track tag.id) {
+            <label class="tag-checkbox-label" [class.selected]="editSelectedTagIds().has(tag.id)">
+              <input
+                type="checkbox"
+                [checked]="editSelectedTagIds().has(tag.id)"
+                (change)="toggleTag(tag.id)"
+              />
+              {{ tag.name }}
+            </label>
+          }
+        </div>
+      </div>
+    }
+  </div>
+
+  <div footer>
+    <button type="button" class="modal-cancel-btn" (click)="onClose()" [disabled]="editSaving()">
+      Cancel
+    </button>
+    <button type="button" class="modal-save-btn" (click)="onSave()" [disabled]="editSaving()">
+      @if (editSaving()) {
+        <span class="mini-spinner white"></span>
+        Saving...
+      } @else {
+        Save changes
+      }
+    </button>
+  </div>
+</app-modal>

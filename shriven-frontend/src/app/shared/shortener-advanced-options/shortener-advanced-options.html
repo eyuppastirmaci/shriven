@@ -1,0 +1,54 @@
+<div class="advanced-panel">
+  <div class="advanced-field">
+    <label class="field-label">
+      <lucide-icon [img]="atSignIcon" [size]="14" />
+      Custom alias
+    </label>
+    <div class="alias-input-wrap">
+      <input
+        type="text"
+        placeholder="e.g. my-portfolio"
+        class="field-input"
+        [class.invalid]="!!aliasValidationMessage"
+        [class.taken]="available() === false"
+        [class.available]="available() === true"
+        [ngModel]="customAlias()"
+        (ngModelChange)="onAliasChange($event)"
+        maxlength="30"
+      />
+      <span class="alias-status">
+        @if (checking()) {
+          <span class="alias-checking"></span>
+        } @else if (available() === true) {
+          <lucide-icon [img]="checkIcon" [size]="14" class="status-ok" />
+        } @else if (available() === false) {
+          <lucide-icon [img]="xIcon" [size]="14" class="status-err" />
+        }
+      </span>
+    </div>
+    @if (aliasValidationMessage) {
+      <span class="field-hint error">{{ aliasValidationMessage }}</span>
+    } @else if (available() === false) {
+      <span class="field-hint error">This alias is already taken</span>
+    } @else if (available() === true) {
+      <span class="field-hint ok">Available!</span>
+    } @else {
+      <span class="field-hint">3–30 chars: letters, numbers, - or _</span>
+    }
+  </div>
+
+  <div class="advanced-field">
+    <label class="field-label">
+      <lucide-icon [img]="calendarIcon" [size]="14" />
+      Expiration date
+    </label>
+    <input
+      type="date"
+      class="field-input"
+      [min]="minDate"
+      [ngModel]="expiresAt()"
+      (ngModelChange)="onExpiryChange($event)"
+    />
+    <span class="field-hint">Leave empty for a permanent link</span>
+  </div>
+</div>

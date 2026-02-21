@@ -1,0 +1,18 @@
+@if (isOpen()) {
+  <div class="modal-backdrop" (click)="onBackdropClick()">
+    <div class="modal" (click)="onContentClick($event)">
+      <div class="modal-header">
+        <h3>{{ title() }}</h3>
+        <button type="button" class="modal-close" (click)="onCloseClick()" [attr.aria-label]="closeLabel()">
+          <lucide-icon [img]="xIcon" [size]="18" />
+        </button>
+      </div>
+      <div class="modal-body">
+        <ng-content />
+      </div>
+      <div class="modal-footer">
+        <ng-content select="[footer]" />
+      </div>
+    </div>
+  </div>
+}

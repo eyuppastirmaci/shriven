@@ -11,6 +11,25 @@
     />
 
     <button
+      class="advanced-toggle"
+      type="button"
+      (click)="showAdvanced.set(!showAdvanced())"
+    >
+      <lucide-icon [img]="showAdvanced() ? chevronUpIcon : chevronDownIcon" [size]="14" />
+      Advanced options
+    </button>
+
+    @if (showAdvanced()) {
+      <app-shortener-advanced-options
+        [customAlias]="customAlias()"
+        [expiresAt]="expiresAt()"
+        (customAliasChange)="customAlias.set($event)"
+        (expiresAtChange)="expiresAt.set($event)"
+        (aliasAvailableChange)="aliasAvailable.set($event)"
+      />
+    }
+
+    <button
       class="shorten-btn"
       (click)="onShortenUrl()"
       [disabled]="!isValidUrl || isLoading()"
@@ -30,6 +49,17 @@
       </div>
     }
 
+    @if (duplicateUrl()) {
+      <div class="duplicate-notice">
+        <div class="duplicate-notice-title">You already have a short link for this URL:</div>
+        <div class="duplicate-notice-url">{{ duplicateUrl()!.shortUrl }}</div>
+        <div class="duplicate-notice-actions">
+          <button class="dup-use-btn" (click)="onUseDuplicate()">Use existing</button>
+          <button class="dup-dismiss-btn" (click)="duplicateUrl.set(null)">Dismiss</button>
+        </div>
+      </div>
+    }
+
     @if (shortUrl()) {
       <div class="result-box">
         <div class="result-label">Your shortened URL:</div>
@@ -40,9 +70,14 @@
             [value]="shortUrl()"
             readonly
           />
-          <button class="copy-btn" (click)="onCopyToClipboard()">
-            <lucide-icon [img]="copyIcon" [size]="18" />
-            Copy
+          <button class="copy-btn" [class.copied]="copied()" (click)="onCopyToClipboard()">
+            @if (copied()) {
+              <lucide-icon [img]="checkIcon" [size]="18" />
+              Copied!
+            } @else {
+              <lucide-icon [img]="copyIcon" [size]="18" />
+              Copy
+            }
           </button>
         </div>
         <a class="stats-link" [routerLink]="['/stats', shortCode()]">

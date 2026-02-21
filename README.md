@@ -23,6 +23,7 @@
 
 ![New Link](.github/assets/new-link.png)
 ![Stats](.github/assets/stats.png)
+![Edit](.github/assets/edit.png)
 
 ## Architecture Highlights
 
@@ -39,16 +40,23 @@
 - 📨 **Async Analytics via Kafka** Click events are published and batch-processed without blocking redirects.
 - 📊 **Click Statistics** Daily and weekly analytics for every short link.
 - 🔐 **JWT Authentication** User registration, login, and link ownership.
+- ✏️ **Custom Aliases** Vanity URLs like `/my-link` with availability check.
+- ⏰ **Link Expiration** Optional expiration date for temporary links.
+- 🏷️ **Tags & Organization** Categorize links with tags and filter by tag on the dashboard.
+- ✏️ **Link Management** Edit alias and expiration, pause/resume, or delete your links (owner-only).
+- 🔗 **Duplicate Detection** Warns when you already have a short link for the same URL.
 - 🐳 **Dockerized Infrastructure** One command spins up PostgreSQL, Redis, and Kafka (KRaft).
 
 ## Planned Features
 
-- ✏️ **Custom Aliases** Vanity URLs like `/my-link`.
-- ⏰ **Link Expiration** Temporary links that auto-expire.
 - 🌍 **GeoIP & Device Tracking** Location, browser, and referrer analytics.
 - 📷 **QR Codes** Downloadable QR for every short link.
 - 🛡️ **Rate Limiting** IP-based throttling to prevent abuse.
 - 🔒 **Password-Protected Links** Restrict access to specific URLs.
+- 🤖 **Auto-tagging** Suggests tags from link metadata (title, description) and maps to your tag system.
+- 🔗 **Semantic duplicate detection** Warn when a new URL is very similar to an existing short link (same site, similar path).
+- ✏️ **Smart alias suggestion** Suggests a readable short alias from the destination URL (e.g. domain + topic).
+- 🔍 **Semantic search** Find links by meaning (e.g. "project docs", "payment links") using embeddings and vector search.
 
 ## Getting Started
 

@@ -74,6 +74,30 @@ class GlobalExceptionHandler {
             .body(ErrorResponse(message = ex.message ?: "Access denied", errorCode = "ACCESS_DENIED"))
     }
 
+    @ExceptionHandler(AliasAlreadyTakenException::class)
+    fun handleAliasAlreadyTaken(ex: AliasAlreadyTakenException): ResponseEntity<ErrorResponse> {
+        logger.warn("Alias already taken: {}", ex.message)
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ErrorResponse(message = ex.message ?: "Alias is already taken", errorCode = "ALIAS_ALREADY_TAKEN"))
+    }
+
+    @ExceptionHandler(DuplicateLinkException::class)
+    fun handleDuplicateLink(ex: DuplicateLinkException): ResponseEntity<ErrorResponse> {
+        logger.info("Duplicate link detected: {}", ex.message)
+        return ResponseEntity
+            .status(HttpStatus.CONFLICT)
+            .body(ErrorResponse(message = ex.message ?: "A short link for this URL already exists", errorCode = "DUPLICATE_LINK", data = ex.existingUrl))
+    }
+
+    @ExceptionHandler(UrlPausedException::class)
+    fun handleUrlPaused(ex: UrlPausedException): ResponseEntity<ErrorResponse> {
+        logger.info("Paused link accessed: {}", ex.message)
+        return ResponseEntity
+            .status(HttpStatus.GONE)
+            .body(ErrorResponse(message = ex.message ?: "This link is currently paused", errorCode = "URL_PAUSED"))
+    }
+
     @ExceptionHandler(Exception::class)
     fun handleGenericError(ex: Exception): ResponseEntity<ErrorResponse> {
         logger.error("Unexpected error occurred", ex)

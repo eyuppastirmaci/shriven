@@ -1,0 +1,10 @@
+@if (tags().length > 0) {
+  <div class="link-tags">
+    @for (tag of tags(); track tag.id) {
+      <span class="link-tag-chip">
+        <lucide-icon [img]="tagIcon" [size]="10" />
+        {{ tag.name }}
+      </span>
+    }
+  </div>
+}

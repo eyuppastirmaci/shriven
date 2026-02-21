@@ -1,0 +1,23 @@
+@if (tags().length > 0) {
+  <div class="tag-filter-bar">
+    <button
+      type="button"
+      class="tag-chip"
+      [class.active]="selectedTagId() === null"
+      (click)="onSelectAll()"
+    >
+      All
+    </button>
+    @for (tag of tags(); track tag.id) {
+      <button
+        type="button"
+        class="tag-chip"
+        [class.active]="selectedTagId() === tag.id"
+        (click)="onSelectTag(tag.id)"
+      >
+        <lucide-icon [img]="tagIcon" [size]="11" />
+        {{ tag.name }}
+      </button>
+    }
+  </div>
+}

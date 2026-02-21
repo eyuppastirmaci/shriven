@@ -17,6 +17,12 @@
     </div>
   </div>
 
+  <app-tag-filter-bar
+    [tags]="userTags()"
+    [selectedTagId]="selectedTagFilter()"
+    (tagFilterChange)="onTagFilterChange($event)"
+  />
+
   @if (isLoading()) {
     <div class="state-box">
       <div class="spinner"></div>
@@ -30,13 +36,19 @@
   } @else if (urls().length === 0) {
     <div class="state-box empty">
       <lucide-icon [img]="linkIcon" [size]="40" class="empty-icon" />
-      <p>You haven't created any links yet.</p>
+      <p>
+        @if (selectedTagFilter() !== null) {
+          No links found with this tag.
+        } @else {
+          You haven't created any links yet.
+        }
+      </p>
       <a routerLink="/" class="action-btn">Create your first link</a>
     </div>
   } @else {
     <div class="link-list">
       @for (url of urls(); track url.shortCode) {
-        <div class="link-card">
+        <div class="link-card" [class.paused]="!url.isActive">
           <div class="link-main">
             <div class="link-short">
               <a [href]="url.shortUrl" target="_blank" rel="noopener noreferrer" class="short-url">
@@ -44,9 +56,21 @@
                 <lucide-icon [img]="externalLinkIcon" [size]="12" />
               </a>
               <span class="click-badge" appTooltip="Click counts may be slightly delayed" tooltipPosition="top">{{ url.clickCount }} clicks</span>
+              @if (!url.isActive) {
+                <span class="paused-badge">Paused</span>
+              }
+              @if (url.isCustomAlias) {
+                <span class="custom-badge">Custom</span>
+              }
+              @if (url.expiresAt) {
+                <span class="expiry-badge" [class.expired]="formatExpiry(url.expiresAt) === 'Expired'">
+                  {{ formatExpiry(url.expiresAt) }}
+                </span>
+              }
             </div>
             <div class="link-long" [title]="url.longUrl">{{ url.longUrl }}</div>
             <div class="link-meta">Created {{ formatDate(url.createdAt) }}</div>
+            <app-tag-chips [tags]="url.tags" />
           </div>
           <div class="link-buttons">
             <button
@@ -71,6 +95,30 @@
               <lucide-icon [img]="statsIcon" [size]="15" />
             </a>
             <button
+              class="icon-btn"
+              appTooltip="Edit"
+              tooltipPosition="top"
+              (click)="onOpenEdit(url)"
+            >
+              <lucide-icon [img]="pencilIcon" [size]="15" />
+            </button>
+            <button
+              class="icon-btn"
+              [class.paused-btn]="!url.isActive"
+              [appTooltip]="url.isActive ? 'Pause link' : 'Resume link'"
+              tooltipPosition="top"
+              [disabled]="togglingCode() === url.shortCode"
+              (click)="onToggleStatus(url)"
+            >
+              @if (togglingCode() === url.shortCode) {
+                <span class="mini-spinner"></span>
+              } @else if (url.isActive) {
+                <lucide-icon [img]="pauseIcon" [size]="15" />
+              } @else {
+                <lucide-icon [img]="playIcon" [size]="15" />
+              }
+            </button>
+            <button
               class="icon-btn danger"
               appTooltip="Delete"
               tooltipPosition="top"
@@ -89,3 +137,10 @@
     </div>
   }
 </div>
+
+<app-edit-link-modal
+  [url]="editingUrl()"
+  [userTags]="userTags()"
+  (saved)="onEditSaved($event)"
+  (closed)="onEditClosed()"
+/>

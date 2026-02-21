@@ -11,10 +11,9 @@ import org.springframework.test.context.TestPropertySource
 	"DB_USERNAME=sa",
 	"DB_PASSWORD=",
 	"spring.datasource.driver-class-name=org.h2.Driver",
-	// Let Hibernate manage the H2 schema - Flyway is disabled (H2 can't run PostgreSQL-specific SQL)
+	// Let Hibernate manage the H2 schema
 	"spring.jpa.hibernate.ddl-auto=create-drop",
 	"spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
-	"spring.flyway.enabled=false",
 	// Resolve ${JWT_*} placeholders in application.yaml
 	"JWT_SECRET=dGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItdGVzdGluZy1vbmx5LTI1NmJpdHM=",
 	"JWT_EXPIRATION=900000",
@@ -26,6 +25,6 @@ class ShrivenBackendApplicationTests {
 
 	@Test
 	fun contextLoads() {
-		// Verify Spring context loads with H2, no Flyway, no live Kafka/Redis connections
+		// Verify Spring context loads with H2, no live Kafka/Redis connections
 	}
 }

@@ -134,12 +134,17 @@
   background: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: 12px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
 }
 
 .link-card:hover {
   border-color: var(--border-hover);
   box-shadow: var(--shadow-card);
+}
+
+.link-card.paused {
+  opacity: 0.55;
+  border-style: dashed;
 }
 
 .link-main {
@@ -194,6 +199,44 @@
   margin-top: 0.3rem;
 }
 
+.paused-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  background: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
+  border-radius: 20px;
+  color: var(--color-error);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.custom-badge {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  border-radius: 20px;
+  color: var(--accent);
+}
+
+.expiry-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  background: var(--bg-input);
+  border: 1px solid var(--border-default);
+  border-radius: 20px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.expiry-badge.expired {
+  background: var(--color-error-bg);
+  border-color: var(--color-error-border);
+  color: var(--color-error);
+}
+
 /* Buttons */
 .link-buttons {
   display: flex;
@@ -230,6 +273,11 @@
 }
 
 .icon-btn.copied {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.icon-btn.paused-btn {
   color: var(--accent);
   border-color: var(--accent);
 }

@@ -3,5 +3,6 @@ package com.eyuppastirmaci.shriven.backend.exception
 data class ErrorResponse(
     val message: String,
     val errorCode: String,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val data: Any? = null
 )

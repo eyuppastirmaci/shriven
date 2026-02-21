@@ -16,6 +16,16 @@ interface UrlRepository : JpaRepository<UrlEntity, Long> {
 
     fun findByShortCodeAndUserId(shortCode: String, userId: Long): UrlEntity?
 
+    fun findByLongUrlAndUserId(longUrl: String, userId: Long): UrlEntity?
+
+    fun existsByShortCode(shortCode: String): Boolean
+
+    @Query("SELECT u FROM UrlEntity u JOIN u.tags t WHERE u.userId = :userId AND t.id = :tagId ORDER BY u.createdAt DESC")
+    fun findAllByUserIdAndTagIdOrderByCreatedAtDesc(
+        @Param("userId") userId: Long,
+        @Param("tagId") tagId: Long
+    ): List<UrlEntity>
+
     @Modifying
     @Transactional
     @Query("UPDATE UrlEntity u SET u.clickCount = u.clickCount + 1 WHERE u.shortCode = :shortCode")

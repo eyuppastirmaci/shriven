@@ -5,5 +5,6 @@ data class ShortenUrlResponse(
     val longUrl: String,
     val shortCode: String,
     val createdAt: String,
-    val expiresAt: String?
+    val expiresAt: String?,
+    val isCustomAlias: Boolean = false
 )
