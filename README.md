@@ -1,13 +1,28 @@
-# Shriven
+<h1 align="center">Shriven</h1>
 
-A simple, distributed URL shortener built with Kotlin and Angular. It uses Snowflake IDs and Base62 for generating links. The focus is on speed: Redis handles the redirects, while Kafka processes analytics asynchronously.
+<p align="center">
+  A simple, distributed URL shortener built with Kotlin and Angular.<br>
+  It uses Snowflake IDs and Base62 for generating links.<br>
+  The focus is on speed: Redis handles the redirects, while Kafka processes analytics asynchronously.
+</p>
 
-## Tech Stack
+<p align="center">
+  <a href="LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-f9e2af?style=flat&labelColor=1e1e2e" alt="License: MIT">
+  </a>
+</p>
 
-- **Backend:** Kotlin + Spring Boot 4
-- **Database:** PostgreSQL + Redis
-- **Messaging:** Apache Kafka
-- **Frontend:** Angular 21
+<p align="center">
+  <img src="https://img.shields.io/badge/Kotlin-b4befe?style=flat&labelColor=1e1e2e&logo=kotlin&logoColor=white" alt="Kotlin">
+  <img src="https://img.shields.io/badge/Spring%20Boot%204-a6e3a1?style=flat&labelColor=1e1e2e&logo=springboot&logoColor=white" alt="Spring Boot 4">
+  <img src="https://img.shields.io/badge/PostgreSQL-89b4fa?style=flat&labelColor=1e1e2e&logo=postgresql&logoColor=white" alt="PostgreSQL">
+  <img src="https://img.shields.io/badge/Redis-f38ba8?style=flat&labelColor=1e1e2e&logo=redis&logoColor=white" alt="Redis">
+  <img src="https://img.shields.io/badge/Apache%20Kafka-a6adc8?style=flat&labelColor=1e1e2e&logo=apachekafka&logoColor=white" alt="Apache Kafka">
+  <img src="https://img.shields.io/badge/Angular%2021-fab387?style=flat&labelColor=1e1e2e&logo=angular&logoColor=white" alt="Angular 21">
+</p>
+
+![New Link](.github/assets/new-link.png)
+![Stats](.github/assets/stats.png)
 
 ## Architecture Highlights
 
@@ -19,51 +34,21 @@ A simple, distributed URL shortener built with Kotlin and Angular. It uses Snowf
 
 ## Features
 
-### Core Capabilities
-- **Distributed ID Generation:** Utilizes Snowflake algorithm for unique, sortable IDs without coordination.
-- **Base62 Encoding:** Converts numeric IDs into compact, URL-safe alphanumeric strings.
-- **Data Persistence:** reliably stores all link data and metadata in PostgreSQL.
-
-### Performance & Caching
-- **Redis Integration:** Implements Cache-Aside and Write-Through patterns for instant data access.
-- **TTL Support:** Automatically handles time-to-live for temporary cache keys.
-- **Non-Blocking Redirects:** Serves redirects immediately while offloading analytics to background threads.
-
-### Infrastructure & Messaging
-- **Asynchronous Event Publishing:** Publishes `ClickEvents` to Kafka topics during the redirect phase.
-- **Kafka Consumer:** Background processing that consumes and aggregates click events from the `url-clicks` topic.
-- **Batch Processing:** Kafka batch listener aggregates events in memory per poll cycle for efficient database writes.
-- **Dockerized Environment:** Fully containerized setup for PostgreSQL, Redis, and Kafka (KRaft).
-
-### Analytics Engine
-- **Data Visualization:** Expose endpoints for daily/weekly click statistics.
-
-### User Management
-- **Authentication:** JWT-based user registration and login system.
-- **Link Ownership:** Associate created links with user accounts for private management.
-- **User Dashboard:** Dedicated interface for users to view and manage their history.
+- 🆔 **Snowflake + Base62 Short Codes** Unique, sortable, collision-free IDs encoded into compact URLs.
+- ⚡ **Redis-Backed Redirects** Cache-Aside pattern delivers sub-50ms P99 latency.
+- 📨 **Async Analytics via Kafka** Click events are published and batch-processed without blocking redirects.
+- 📊 **Click Statistics** Daily and weekly analytics for every short link.
+- 🔐 **JWT Authentication** User registration, login, and link ownership.
+- 🐳 **Dockerized Infrastructure** One command spins up PostgreSQL, Redis, and Kafka (KRaft).
 
 ## Planned Features
 
-### Customization & Control
-- **Custom Aliases:** Allow users to define their own vanity URLs (e.g., `/my-link`).
-- **Expiration Dates:** Support temporary links that automatically expire after a set time.
-- **Tags & Categories:** Organize links using custom tags for better filtering.
-
-### Advanced Metrics
-- **GeoIP Integration:** Resolve IP addresses to approximate country and city locations.
-- **Device Tracking:** Parse User-Agent strings to identify browser and device types.
-- **Referrer Analysis:** Track traffic sources to understand where clicks come from.
-
-### Enterprise Features
-- **Rate Limiting:** Protect the API against abuse using IP-based throttling.
-- **QR Codes:** Generate downloadable QR codes for every short link.
-- **Bulk Operations:** Support CSV import/export for managing large volumes of links.
-- **Security:** Add password protection to specific short links.
-
-### AI & Smart Features
-- **Auto-Categorization:** Use ML models to analyze target URLs and suggest tags automatically.
-- **Semantic Search:** Implement vector-based search to find links by content.
+- ✏️ **Custom Aliases** Vanity URLs like `/my-link`.
+- ⏰ **Link Expiration** Temporary links that auto-expire.
+- 🌍 **GeoIP & Device Tracking** Location, browser, and referrer analytics.
+- 📷 **QR Codes** Downloadable QR for every short link.
+- 🛡️ **Rate Limiting** IP-based throttling to prevent abuse.
+- 🔒 **Password-Protected Links** Restrict access to specific URLs.
 
 ## Getting Started
 
@@ -79,3 +64,4 @@ cd shriven-backend
 cd shriven-frontend
 npm install
 ng serve
+```
