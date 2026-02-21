@@ -67,6 +67,11 @@ base62:
   charset: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
   base: 62
 
+# Country resolution via ip-api.com (no sign-up). Cached in memory to respect 45 req/min limit.
+geoip:
+  api-url: "http://ip-api.com/json"
+  cache-ttl-hours: 720
+
 logging:
   level:
     com.eyuppastirmaci: INFO

@@ -3,17 +3,14 @@
     <app-sidebar />
   }
 
-  <div class="theme-dropdown-anchor">
-    <app-theme-toggle />
-  </div>
-
   <div
     class="container"
     [class.with-sidebar]="authService.isLoggedIn()"
     [class.sidebar-collapsed]="sidebarService.collapsed()"
   >
-    <app-header />
-
+    <div class="theme-bar">
+      <app-theme-toggle />
+    </div>
     <main>
       <router-outlet />
     </main>

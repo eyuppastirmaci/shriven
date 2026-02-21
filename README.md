@@ -24,6 +24,7 @@
 ![New Link](.github/assets/new-link.png)
 ![Stats](.github/assets/stats.png)
 ![Edit](.github/assets/edit.png)
+![analytics](.github/assets/analytics.png)
 
 ## Architecture Highlights
 
@@ -45,11 +46,10 @@
 - 🏷️ **Tags & Organization** Categorize links with tags and filter by tag on the dashboard.
 - ✏️ **Link Management** Edit alias and expiration, pause/resume, or delete your links (owner-only).
 - 🔗 **Duplicate Detection** Warns when you already have a short link for the same URL.
+- 🌍 **GeoIP & Device Tracking** Location, browser, and referrer analytics (country via [ip-api.com](https://ip-api.com); no sign-up or database file required).
 - 🐳 **Dockerized Infrastructure** One command spins up PostgreSQL, Redis, and Kafka (KRaft).
 
 ## Planned Features
-
-- 🌍 **GeoIP & Device Tracking** Location, browser, and referrer analytics.
 - 📷 **QR Codes** Downloadable QR for every short link.
 - 🛡️ **Rate Limiting** IP-based throttling to prevent abuse.
 - 🔒 **Password-Protected Links** Restrict access to specific URLs.
@@ -95,6 +95,16 @@ cd shriven-frontend
 npm install
 ng serve
 ```
+
+### 4. Demo data for Analytics map (optional)
+
+To show sample country markers on the Analytics page (e.g. for screenshots):
+
+```bash
+docker exec -i project-shriven-postgres-1 psql -U user -d url_shortener < scripts/seed-geo-stats.sql
+```
+
+This upserts geo stats for the short codes `google` and `kWTP1FuRCU`; select one of those links on the Analytics page to see the map.
 
 ## Running Tests
 

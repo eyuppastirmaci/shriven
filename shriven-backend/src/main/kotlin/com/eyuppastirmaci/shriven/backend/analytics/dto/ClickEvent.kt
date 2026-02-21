@@ -6,5 +6,6 @@ data class ClickEvent(
     val shortCode: String,
     val timestamp: Instant,
     val userAgent: String?,
-    val ipAddress: String?
+    val ipAddress: String?,
+    val referrer: String? = null
 )

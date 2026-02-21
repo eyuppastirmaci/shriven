@@ -1,0 +1,45 @@
+.link-selector {
+  margin-bottom: 1.5rem;
+}
+
+.link-selector-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.link-selector-loading,
+.link-selector-error,
+.link-selector-empty {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.link-selector-error {
+  color: var(--color-error);
+}
+
+.link-selector-select {
+  width: 100%;
+  max-width: 480px;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9375rem;
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-default);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.link-selector-select:hover {
+  border-color: var(--border-hover);
+}
+
+.link-selector-select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.2);
+}

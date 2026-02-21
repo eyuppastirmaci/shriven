@@ -1,6 +1,7 @@
 import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import {
+  BarChart2,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
@@ -26,6 +27,7 @@ export class Sidebar {
   protected readonly sidebarService = inject(SidebarService);
 
   protected readonly dashboardIcon = LayoutDashboard;
+  protected readonly analyticsIcon = BarChart2;
   protected readonly logoutIcon = LogOut;
   protected readonly newLinkIcon = Plus;
   protected readonly logoIcon = Link2;

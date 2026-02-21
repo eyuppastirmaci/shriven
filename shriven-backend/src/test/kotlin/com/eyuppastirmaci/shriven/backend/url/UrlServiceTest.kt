@@ -6,7 +6,6 @@ import com.eyuppastirmaci.shriven.backend.exception.RedisOperationException
 import com.eyuppastirmaci.shriven.backend.exception.UrlExpiredException
 import com.eyuppastirmaci.shriven.backend.exception.UrlNotFoundException
 import com.eyuppastirmaci.shriven.backend.exception.UrlPausedException
-import com.eyuppastirmaci.shriven.backend.kafka.KafkaClient
 import com.eyuppastirmaci.shriven.backend.properties.AppProperties
 import com.eyuppastirmaci.shriven.backend.redis.RedisClient
 import com.eyuppastirmaci.shriven.backend.snowflake.Base62Encoder
@@ -28,12 +27,11 @@ class UrlServiceTest {
     private val snowflakeIdGenerator = mockk<SnowflakeIdGenerator>()
     private val base62Encoder = mockk<Base62Encoder>()
     private val redisClient = mockk<RedisClient>(relaxed = true)
-    private val kafkaClient = mockk<KafkaClient>(relaxed = true)
     private val appProperties = AppProperties(baseUrl = "https://sho.rt")
 
     private val urlService = UrlService(
         urlRepository, tagRepository, snowflakeIdGenerator, base62Encoder,
-        redisClient, kafkaClient, appProperties
+        redisClient, appProperties
     )
 
     // -- shortenUrl --
@@ -77,10 +75,9 @@ class UrlServiceTest {
     fun `getLongUrl returns cached URL on cache hit`() {
         every { redisClient.getUrl("abc") } returns "https://example.com"
 
-        val result = urlService.getLongUrl("abc", "Mozilla/5.0", "127.0.0.1")
+        val result = urlService.getLongUrl("abc")
 
         assertEquals("https://example.com", result)
-        verify { kafkaClient.sendClickEvent(any()) }
         verify(exactly = 0) { urlRepository.findByShortCode(any()) }
     }
 
@@ -93,11 +90,10 @@ class UrlServiceTest {
         )
         every { urlRepository.findByShortCode("abc") } returns entity
 
-        val result = urlService.getLongUrl("abc", "Mozilla/5.0", "127.0.0.1")
+        val result = urlService.getLongUrl("abc")
 
         assertEquals("https://example.com", result)
         verify { redisClient.saveUrl("abc", "https://example.com") }
-        verify { kafkaClient.sendClickEvent(any()) }
     }
 
     @Test
@@ -106,7 +102,7 @@ class UrlServiceTest {
         every { urlRepository.findByShortCode("nope") } returns null
 
         assertThrows<UrlNotFoundException> {
-            urlService.getLongUrl("nope", null, null)
+            urlService.getLongUrl("nope")
         }
     }
 
@@ -120,7 +116,7 @@ class UrlServiceTest {
         every { urlRepository.findByShortCode("exp") } returns entity
 
         assertThrows<UrlExpiredException> {
-            urlService.getLongUrl("exp", null, null)
+            urlService.getLongUrl("exp")
         }
     }
 
@@ -134,7 +130,7 @@ class UrlServiceTest {
         every { urlRepository.findByShortCode("paused") } returns entity
 
         assertThrows<UrlPausedException> {
-            urlService.getLongUrl("paused", null, null)
+            urlService.getLongUrl("paused")
         }
     }
 
@@ -148,10 +144,9 @@ class UrlServiceTest {
         every { urlRepository.findByShortCode("abc") } returns entity
         every { redisClient.saveUrl(any(), any()) } throws RedisOperationException("Connection refused")
 
-        val result = urlService.getLongUrl("abc", null, null)
+        val result = urlService.getLongUrl("abc")
 
         assertEquals("https://example.com", result)
-        verify { kafkaClient.sendClickEvent(any()) }
     }
 
     // -- deleteUrl --

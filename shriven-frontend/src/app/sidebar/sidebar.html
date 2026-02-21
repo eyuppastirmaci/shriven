@@ -52,6 +52,21 @@
           [iconSize]="18"
         />
       </a>
+      <a
+        routerLink="/analytics"
+        routerLinkActive="active"
+        class="sidebar-nav-item"
+        ariaCurrentWhenActive="page"
+        [appTooltip]="collapsed() ? 'Analytics' : ''"
+        tooltipPosition="right"
+      >
+        <app-sidebar-icon
+          [icon]="analyticsIcon"
+          label="Analytics"
+          [collapsed]="collapsed()"
+          [iconSize]="18"
+        />
+      </a>
     </nav>
 
   </div>

@@ -1,0 +1,9 @@
+@if (loading()) {
+  <div class="analytics-map-loading">Loading map…</div>
+} @else if (error()) {
+  <div class="analytics-map-error">{{ error() }}</div>
+} @else if (geoStats().length === 0) {
+  <div class="analytics-map-empty">No location data yet</div>
+} @else {
+  <div id="analytics-map-container" class="analytics-map-container"></div>
+}

@@ -1,8 +1,16 @@
 package com.eyuppastirmaci.shriven.backend.kafka
 
+import com.eyuppastirmaci.shriven.backend.analytics.GeoIpService
+import com.eyuppastirmaci.shriven.backend.analytics.LinkDeviceStatsRepository
+import com.eyuppastirmaci.shriven.backend.analytics.LinkGeoStatsRepository
+import com.eyuppastirmaci.shriven.backend.analytics.LinkReferrerStatsRepository
 import com.eyuppastirmaci.shriven.backend.analytics.LinkStatsRepository
+import com.eyuppastirmaci.shriven.backend.analytics.ParsedUserAgent
+import com.eyuppastirmaci.shriven.backend.analytics.ReferrerDomainExtractor
+import com.eyuppastirmaci.shriven.backend.analytics.UserAgentParseService
 import com.eyuppastirmaci.shriven.backend.analytics.dto.ClickEvent
 import com.eyuppastirmaci.shriven.backend.url.UrlRepository
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.Test
@@ -13,7 +21,24 @@ class ClickEventConsumerTest {
 
     private val linkStatsRepository = mockk<LinkStatsRepository>(relaxed = true)
     private val urlRepository = mockk<UrlRepository>(relaxed = true)
-    private val consumer = ClickEventConsumer(linkStatsRepository, urlRepository)
+    private val linkGeoStatsRepository = mockk<LinkGeoStatsRepository>(relaxed = true)
+    private val linkDeviceStatsRepository = mockk<LinkDeviceStatsRepository>(relaxed = true)
+    private val linkReferrerStatsRepository = mockk<LinkReferrerStatsRepository>(relaxed = true)
+    private val geoIpService = mockk<GeoIpService>(relaxed = true)
+    private val userAgentParseService = mockk<UserAgentParseService>(relaxed = true)
+    private val referrerDomainExtractor = mockk<ReferrerDomainExtractor>(relaxed = true)
+
+    init {
+        every { geoIpService.getCountryCode(any()) } returns "Unknown"
+        every { userAgentParseService.parse(any()) } returns ParsedUserAgent("Unknown", "Unknown", "Unknown")
+        every { referrerDomainExtractor.extractDomain(any()) } returns "direct"
+    }
+
+    private val consumer = ClickEventConsumer(
+        linkStatsRepository, urlRepository,
+        linkGeoStatsRepository, linkDeviceStatsRepository, linkReferrerStatsRepository,
+        geoIpService, userAgentParseService, referrerDomainExtractor
+    )
 
     @Test
     fun `consume does nothing for empty list`() {

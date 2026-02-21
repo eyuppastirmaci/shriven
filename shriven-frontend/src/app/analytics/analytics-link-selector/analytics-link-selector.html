@@ -1,0 +1,22 @@
+<div class="link-selector">
+  <label class="link-selector-label" for="analytics-link-select">Select a link</label>
+  @if (loading()) {
+    <p class="link-selector-loading">Loading your links…</p>
+  } @else if (error()) {
+    <p class="link-selector-error">{{ error() }}</p>
+  } @else if (links().length === 0) {
+    <p class="link-selector-empty">You don't have any links yet. Shorten one to see analytics here.</p>
+  } @else {
+    <select
+      id="analytics-link-select"
+      class="link-selector-select"
+      (change)="select($any($event.target).value)"
+    >
+      @for (link of links(); track link.shortCode) {
+        <option [value]="link.shortCode" [selected]="link.shortCode === selectedCode()">
+          {{ link.shortCode }} – {{ link.longUrl.length > 50 ? link.longUrl.slice(0, 50) + '…' : link.longUrl }}
+        </option>
+      }
+    </select>
+  }
+</div>

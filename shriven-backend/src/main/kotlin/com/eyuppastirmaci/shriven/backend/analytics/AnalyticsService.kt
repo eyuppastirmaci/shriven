@@ -1,6 +1,9 @@
 package com.eyuppastirmaci.shriven.backend.analytics
 
 import com.eyuppastirmaci.shriven.backend.analytics.dto.DailyStat
+import com.eyuppastirmaci.shriven.backend.analytics.dto.DeviceStatItem
+import com.eyuppastirmaci.shriven.backend.analytics.dto.GeoStatItem
+import com.eyuppastirmaci.shriven.backend.analytics.dto.ReferrerStatItem
 import com.eyuppastirmaci.shriven.backend.analytics.dto.StatsResponse
 import com.eyuppastirmaci.shriven.backend.analytics.dto.WeeklyStat
 import com.eyuppastirmaci.shriven.backend.exception.AccessDeniedException
@@ -15,7 +18,10 @@ import java.time.ZoneOffset
 @Service
 class AnalyticsService(
     private val linkStatsRepository: LinkStatsRepository,
-    private val urlRepository: UrlRepository
+    private val urlRepository: UrlRepository,
+    private val linkGeoStatsRepository: LinkGeoStatsRepository,
+    private val linkDeviceStatsRepository: LinkDeviceStatsRepository,
+    private val linkReferrerStatsRepository: LinkReferrerStatsRepository
 ) {
 
     @Transactional(readOnly = true)
@@ -53,5 +59,34 @@ class AnalyticsService(
             dailyStats = dailyStats,
             weeklyStats = weeklyStats
         )
+    }
+
+    @Transactional(readOnly = true)
+    fun getGeoStats(shortCode: String, requestingUserId: Long?): List<GeoStatItem> {
+        ensureCanViewStats(shortCode, requestingUserId)
+        return linkGeoStatsRepository.findAllByShortCodeOrderByCountDesc(shortCode)
+            .map { GeoStatItem(it.countryCode, CountryNames.getName(it.countryCode), it.count) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getDeviceStats(shortCode: String, requestingUserId: Long?): List<DeviceStatItem> {
+        ensureCanViewStats(shortCode, requestingUserId)
+        return linkDeviceStatsRepository.findAllByShortCodeOrderByCountDesc(shortCode)
+            .map { DeviceStatItem(it.browser, it.os, it.deviceType, it.count) }
+    }
+
+    @Transactional(readOnly = true)
+    fun getReferrerStats(shortCode: String, requestingUserId: Long?): List<ReferrerStatItem> {
+        ensureCanViewStats(shortCode, requestingUserId)
+        return linkReferrerStatsRepository.findAllByShortCodeOrderByCountDesc(shortCode)
+            .map { ReferrerStatItem(it.referrerDomain, it.count) }
+    }
+
+    private fun ensureCanViewStats(shortCode: String, requestingUserId: Long?) {
+        val urlEntity = urlRepository.findByShortCode(shortCode)
+            ?: throw UrlNotFoundException("Short code not found: $shortCode")
+        if (urlEntity.userId != null && urlEntity.userId != requestingUserId) {
+            throw AccessDeniedException("You do not have permission to view stats for this link")
+        }
     }
 }

@@ -1,0 +1,24 @@
+<div class="analytics-page">
+  <header class="analytics-header">
+    <a routerLink="/dashboard" class="analytics-back">
+      <lucide-icon [img]="arrowLeftIcon" [size]="18" />
+      <span>Back to Dashboard</span>
+    </a>
+  </header>
+
+  <app-analytics-link-selector (shortCodeChange)="onShortCodeChange($event)" />
+
+  @if (selectedShortCode()) {
+    <div class="analytics-content">
+      <section class="analytics-map-section">
+        <app-analytics-map [shortCode]="selectedShortCode()!" />
+      </section>
+      <div class="analytics-breakdowns">
+        <app-analytics-device-breakdown [shortCode]="selectedShortCode()!" />
+        <app-analytics-referrer-breakdown [shortCode]="selectedShortCode()!" />
+      </div>
+    </div>
+  } @else {
+    <p class="analytics-prompt">Select a link above to view analytics.</p>
+  }
+</div>

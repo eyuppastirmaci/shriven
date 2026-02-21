@@ -1,13 +1,11 @@
 package com.eyuppastirmaci.shriven.backend.url
 
-import com.eyuppastirmaci.shriven.backend.analytics.dto.ClickEvent
 import com.eyuppastirmaci.shriven.backend.exception.AccessDeniedException
 import com.eyuppastirmaci.shriven.backend.exception.AliasAlreadyTakenException
 import com.eyuppastirmaci.shriven.backend.exception.DuplicateLinkException
 import com.eyuppastirmaci.shriven.backend.exception.UrlExpiredException
 import com.eyuppastirmaci.shriven.backend.exception.UrlNotFoundException
 import com.eyuppastirmaci.shriven.backend.exception.UrlPausedException
-import com.eyuppastirmaci.shriven.backend.kafka.KafkaClient
 import com.eyuppastirmaci.shriven.backend.properties.AppProperties
 import com.eyuppastirmaci.shriven.backend.redis.RedisClient
 import com.eyuppastirmaci.shriven.backend.snowflake.Base62Encoder
@@ -30,7 +28,6 @@ class UrlService(
     private val snowflakeIdGenerator: SnowflakeIdGenerator,
     private val base62Encoder: Base62Encoder,
     private val redisClient: RedisClient,
-    private val kafkaClient: KafkaClient,
     private val appProperties: AppProperties
 ) {
     companion object {
@@ -96,11 +93,11 @@ class UrlService(
      * Implements Cache-Aside Pattern.
      * Redis is always checked first; on miss, falls back to PostgreSQL.
      * Paused links are never served from cache (cache is cleared on pause).
+     * Click events are published by RedirectClickPublishAspect after successful redirect.
      */
-    fun getLongUrl(shortCode: String, userAgent: String?, ipAddress: String?): String {
+    fun getLongUrl(shortCode: String): String {
         val cachedUrl = redisClient.getUrl(shortCode)
         if (!cachedUrl.isNullOrEmpty()) {
-            kafkaClient.sendClickEvent(ClickEvent(shortCode, Instant.now(), userAgent, ipAddress))
             return cachedUrl
         }
 
@@ -122,8 +119,6 @@ class UrlService(
         } catch (e: Exception) {
             logger.warn("Failed to populate cache for $shortCode", e)
         }
-
-        kafkaClient.sendClickEvent(ClickEvent(shortCode, Instant.now(), userAgent, ipAddress))
 
         return entity.longUrl
     }

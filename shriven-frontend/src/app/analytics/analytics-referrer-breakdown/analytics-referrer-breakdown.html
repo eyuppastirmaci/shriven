@@ -1,0 +1,19 @@
+<div class="referrer-breakdown">
+  <h3 class="breakdown-title">Referrers</h3>
+  @if (loading()) {
+    <p class="breakdown-loading">Loading…</p>
+  } @else if (error()) {
+    <p class="breakdown-error">{{ error() }}</p>
+  } @else if (items().length === 0) {
+    <p class="breakdown-empty">No referrer data yet</p>
+  } @else {
+    <ul class="breakdown-list">
+      @for (item of items(); track item.referrerDomain) {
+        <li class="breakdown-row">
+          <span class="breakdown-label">{{ item.referrerDomain }}</span>
+          <span class="breakdown-count">{{ item.count }} click{{ item.count !== 1 ? 's' : '' }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>

@@ -1,6 +1,5 @@
 import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Header } from './header/header';
 import { Footer } from './footer/footer';
 import { Toast } from './shared/toast/toast';
 import { ThemeToggle } from './shared/theme-toggle/theme-toggle';
@@ -10,7 +9,7 @@ import { SidebarService } from './sidebar/sidebar.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, Header, Footer, Toast, ThemeToggle, Sidebar],
+  imports: [RouterOutlet, Footer, Toast, ThemeToggle, Sidebar],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

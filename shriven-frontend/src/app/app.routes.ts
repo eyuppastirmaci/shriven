@@ -4,6 +4,7 @@ import { Stats } from './stats/stats';
 import { Login } from './auth/login/login';
 import { Register } from './auth/register/register';
 import { Dashboard } from './dashboard/dashboard';
+import { Analytics } from './analytics/analytics/analytics';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 
@@ -13,5 +14,6 @@ export const routes: Routes = [
   { path: 'login', component: Login, canActivate: [guestGuard] },
   { path: 'register', component: Register, canActivate: [guestGuard] },
   { path: 'dashboard', component: Dashboard, canActivate: [authGuard] },
+  { path: 'analytics', component: Analytics, canActivate: [authGuard] },
   { path: 'stats/:shortCode', component: Stats, canActivate: [authGuard] }
 ];

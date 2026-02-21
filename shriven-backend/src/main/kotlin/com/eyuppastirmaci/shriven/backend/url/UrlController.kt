@@ -59,10 +59,7 @@ class UrlController(
             return ResponseEntity.badRequest().build()
         }
 
-        val userAgent = request.getHeader("User-Agent")
-        val ipAddress = request.remoteAddr
-
-        val longUrl = urlService.getLongUrl(shortCode, userAgent, ipAddress)
+        val longUrl = urlService.getLongUrl(shortCode)
 
         return ResponseEntity
             .status(HttpStatus.FOUND)
