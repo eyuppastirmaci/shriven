@@ -14,6 +14,7 @@ export interface ShortenUrlRequest {
   customAlias?: string;
   expiresAt?: string;
   tagIds?: number[];
+  password?: string;
 }
 
 export interface ShortenUrlResponse {
@@ -23,6 +24,7 @@ export interface ShortenUrlResponse {
   createdAt: string;
   expiresAt?: string;
   isCustomAlias: boolean;
+  passwordProtected?: boolean;
 }
 
 export interface UserUrlResponse {
@@ -34,7 +36,12 @@ export interface UserUrlResponse {
   expiresAt?: string;
   isActive: boolean;
   isCustomAlias: boolean;
+  passwordProtected?: boolean;
   tags: TagResponse[];
+}
+
+export interface UnlockResponse {
+  redirectUrl: string;
 }
 
 export interface AliasAvailabilityResponse {
@@ -47,6 +54,8 @@ export interface UpdateUrlRequest {
   expiresAt?: string;
   clearExpiration?: boolean;
   tagIds?: number[];
+  password?: string;
+  clearPassword?: boolean;
 }
 
 @Injectable({
@@ -55,6 +64,7 @@ export interface UpdateUrlRequest {
 export class UrlShortenerService {
   private readonly http = inject(HttpClient);
   private readonly apiUrl = environment.apiUrl;
+  private readonly redirectBaseUrl = environment.redirectBaseUrl || (typeof window !== 'undefined' ? window.location.origin : '');
 
   shortenUrl(request: ShortenUrlRequest): Observable<ShortenUrlResponse> {
     return this.http.post<ShortenUrlResponse>(`${this.apiUrl}/shorten`, request);
@@ -82,5 +92,9 @@ export class UrlShortenerService {
 
   deleteUrl(shortCode: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/urls/${shortCode}`);
+  }
+
+  unlockLink(shortCode: string, password: string): Observable<UnlockResponse> {
+    return this.http.post<UnlockResponse>(`${this.redirectBaseUrl}/${encodeURIComponent(shortCode)}/unlock`, { password });
   }
 }

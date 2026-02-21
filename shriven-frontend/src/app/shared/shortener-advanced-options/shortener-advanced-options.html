@@ -51,4 +51,21 @@
     />
     <span class="field-hint">Leave empty for a permanent link</span>
   </div>
+
+  <div class="advanced-field">
+    <label class="field-label">
+      <lucide-icon [img]="keyIcon" [size]="14" />
+      Link password (optional)
+    </label>
+    <input
+      type="password"
+      class="field-input"
+      placeholder="Restrict access with a password"
+      [ngModel]="password()"
+      (ngModelChange)="onPasswordChange($event)"
+      maxlength="128"
+      autocomplete="off"
+    />
+    <span class="field-hint">Visitors will need this password to open the link</span>
+  </div>
 </div>

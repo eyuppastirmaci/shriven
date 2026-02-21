@@ -1,6 +1,6 @@
 import { Component, input, output, signal, inject, OnDestroy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AtSign, Calendar, Check, LucideAngularModule, X } from 'lucide-angular';
+import { AtSign, Calendar, Check, KeyRound, LucideAngularModule, X } from 'lucide-angular';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { UrlShortenerService } from '../../services/url-shortener.service';
@@ -15,17 +15,20 @@ import { UrlShortenerService } from '../../services/url-shortener.service';
 export class ShortenerAdvancedOptionsComponent implements OnDestroy {
   readonly customAlias = input<string>('');
   readonly expiresAt = input<string>('');
+  readonly password = input<string>('');
   readonly aliasChecking = input<boolean>(false);
   readonly aliasAvailable = input<boolean | null>(null);
 
   readonly customAliasChange = output<string>();
   readonly expiresAtChange = output<string>();
   readonly aliasAvailableChange = output<boolean | null>();
+  readonly passwordChange = output<string>();
 
   protected readonly atSignIcon = AtSign;
   protected readonly calendarIcon = Calendar;
   protected readonly checkIcon = Check;
   protected readonly xIcon = X;
+  protected readonly keyIcon = KeyRound;
 
   protected readonly checking = signal(false);
   protected readonly available = signal<boolean | null>(null);
@@ -91,5 +94,9 @@ export class ShortenerAdvancedOptionsComponent implements OnDestroy {
 
   protected onExpiryChange(value: string): void {
     this.expiresAtChange.emit(value);
+  }
+
+  protected onPasswordChange(value: string): void {
+    this.passwordChange.emit(value ?? '');
   }
 }

@@ -30,6 +30,7 @@ class SecurityConfig(
                     .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/shorten").permitAll()
                     .requestMatchers(HttpMethod.GET, "/{shortCode}").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/{shortCode}/unlock").permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/urls/check-alias/**").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .anyRequest().authenticated()

@@ -6,5 +6,6 @@ data class ShortenUrlResponse(
     val shortCode: String,
     val createdAt: String,
     val expiresAt: String?,
-    val isCustomAlias: Boolean = false
+    val isCustomAlias: Boolean = false,
+    val passwordProtected: Boolean = false
 )

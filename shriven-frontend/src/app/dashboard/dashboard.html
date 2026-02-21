@@ -67,6 +67,9 @@
                   {{ formatExpiry(url.expiresAt) }}
                 </span>
               }
+              @if (url.passwordProtected) {
+                <span class="password-badge">Password protected</span>
+              }
             </div>
             <div class="link-long" [title]="url.longUrl">{{ url.longUrl }}</div>
             <div class="link-meta">Created {{ formatDate(url.createdAt) }}</div>

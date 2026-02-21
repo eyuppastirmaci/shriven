@@ -58,6 +58,7 @@ export class Home implements OnDestroy {
   protected readonly showAdvanced = signal(false);
   protected readonly customAlias = signal('');
   protected readonly expiresAt = signal('');
+  protected readonly password = signal('');
   protected readonly aliasAvailable = signal<boolean | null>(null);
 
   protected readonly duplicateUrl = signal<UserUrlResponse | null>(null);
@@ -106,10 +107,12 @@ export class Home implements OnDestroy {
     this.duplicateUrl.set(null);
 
     const expiresAtValue = this.expiresAt();
+    const passwordValue = this.password();
     const request = {
       longUrl: this.longUrl(),
       ...(alias ? { customAlias: alias } : {}),
-      ...(expiresAtValue ? { expiresAt: new Date(expiresAtValue).toISOString() } : {})
+      ...(expiresAtValue ? { expiresAt: new Date(expiresAtValue).toISOString() } : {}),
+      ...(passwordValue?.trim() ? { password: passwordValue.trim() } : {})
     };
 
     this.urlShortenerService.shortenUrl(request).subscribe({
@@ -120,9 +123,10 @@ export class Home implements OnDestroy {
         this.longUrl.set('');
         this.customAlias.set('');
         this.expiresAt.set('');
+        this.password.set('');
         this.aliasAvailable.set(null);
         this.showAdvanced.set(false);
-        this.toastService.show('Short link created!', 'success');
+        this.toastService.show(response.passwordProtected ? 'Short link created! It is password-protected.' : 'Short link created!', 'success');
       },
       error: (err) => {
         this.isLoading.set(false);

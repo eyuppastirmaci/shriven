@@ -3,6 +3,8 @@ package com.eyuppastirmaci.shriven.backend.url
 import com.eyuppastirmaci.shriven.backend.exception.AccessDeniedException
 import com.eyuppastirmaci.shriven.backend.exception.AliasAlreadyTakenException
 import com.eyuppastirmaci.shriven.backend.exception.DuplicateLinkException
+import com.eyuppastirmaci.shriven.backend.exception.InvalidLinkPasswordException
+import com.eyuppastirmaci.shriven.backend.exception.RequiresPasswordException
 import com.eyuppastirmaci.shriven.backend.exception.UrlExpiredException
 import com.eyuppastirmaci.shriven.backend.exception.UrlNotFoundException
 import com.eyuppastirmaci.shriven.backend.exception.UrlPausedException
@@ -18,6 +20,7 @@ import com.eyuppastirmaci.shriven.backend.url.dto.request.ShortenUrlRequest
 import com.eyuppastirmaci.shriven.backend.url.dto.request.UpdateUrlRequest
 import com.eyuppastirmaci.shriven.backend.url.dto.response.UserUrlResponse
 import org.slf4j.LoggerFactory
+import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -30,11 +33,13 @@ class UrlService(
     private val base62Encoder: Base62Encoder,
     private val redisClient: RedisClient,
     private val cacheProperties: CacheProperties,
-    private val appProperties: AppProperties
+    private val appProperties: AppProperties,
+    private val passwordEncoder: PasswordEncoder
 ) {
     companion object {
         private val logger = LoggerFactory.getLogger(UrlService::class.java)
         private const val URL_CACHE_KEY_PREFIX = "short:"
+        private const val CACHE_SENTINEL_PASSWORD_PROTECTED = "__PWD__"
     }
 
     private fun urlCacheKey(shortCode: String): String = "$URL_CACHE_KEY_PREFIX$shortCode"
@@ -76,6 +81,8 @@ class UrlService(
             mutableSetOf()
         }
 
+        val passwordHash = request.password?.takeIf { it.isNotBlank() }?.let { passwordEncoder.encode(it) }
+
         val entity = UrlEntity(
             id = id,
             shortCode = shortCode,
@@ -85,11 +92,13 @@ class UrlService(
             clickCount = 0,
             userId = userId,
             isCustomAlias = isCustomAlias,
+            passwordHash = passwordHash,
             tags = tags
         )
 
         val savedEntity = urlRepository.save(entity)
-        redisClient.set(urlCacheKey(shortCode), request.longUrl, cacheProperties.ttl.toMillis())
+        val cacheValue = if (savedEntity.passwordHash != null) CACHE_SENTINEL_PASSWORD_PROTECTED else request.longUrl
+        redisClient.set(urlCacheKey(shortCode), cacheValue, cacheProperties.ttl.toMillis())
 
         return savedEntity
     }
@@ -101,9 +110,12 @@ class UrlService(
      * Click events are published by RedirectClickPublishAspect after successful redirect.
      */
     fun getLongUrl(shortCode: String): String {
-        val cachedUrl = redisClient.get(urlCacheKey(shortCode))
-        if (!cachedUrl.isNullOrEmpty()) {
-            return cachedUrl
+        val cached = redisClient.get(urlCacheKey(shortCode))
+        if (!cached.isNullOrEmpty()) {
+            if (cached == CACHE_SENTINEL_PASSWORD_PROTECTED) {
+                throw RequiresPasswordException(shortCode)
+            }
+            return cached
         }
 
         val entity = urlRepository.findByShortCode(shortCode)
@@ -117,6 +129,15 @@ class UrlService(
 
         if (!entity.isActive) {
             throw UrlPausedException("This link is currently paused: $shortCode")
+        }
+
+        if (entity.passwordHash != null) {
+            try {
+                redisClient.set(urlCacheKey(shortCode), CACHE_SENTINEL_PASSWORD_PROTECTED, cacheProperties.ttl.toMillis())
+            } catch (e: Exception) {
+                logger.warn("Failed to populate cache for $shortCode", e)
+            }
+            throw RequiresPasswordException(shortCode)
         }
 
         try {
@@ -156,12 +177,31 @@ class UrlService(
             redisClient.delete(urlCacheKey(entity.shortCode))
             entity.shortCode = newAlias
             entity.isCustomAlias = true
-            redisClient.set(urlCacheKey(newAlias), entity.longUrl, cacheProperties.ttl.toMillis())
+            val cacheValue = if (entity.passwordHash != null) CACHE_SENTINEL_PASSWORD_PROTECTED else entity.longUrl
+            redisClient.set(urlCacheKey(newAlias), cacheValue, cacheProperties.ttl.toMillis())
         }
 
         when {
             request.clearExpiration -> entity.expiresAt = null
             request.expiresAt != null -> entity.expiresAt = Instant.parse(request.expiresAt)
+        }
+
+        if (request.clearPassword) {
+            entity.passwordHash = null
+            redisClient.delete(urlCacheKey(entity.shortCode))
+            try {
+                redisClient.set(urlCacheKey(entity.shortCode), entity.longUrl, cacheProperties.ttl.toMillis())
+            } catch (e: Exception) {
+                logger.warn("Failed to re-populate cache for ${entity.shortCode} after clearing password", e)
+            }
+        } else if (!request.password.isNullOrBlank()) {
+            entity.passwordHash = passwordEncoder.encode(request.password)
+            redisClient.delete(urlCacheKey(entity.shortCode))
+            try {
+                redisClient.set(urlCacheKey(entity.shortCode), CACHE_SENTINEL_PASSWORD_PROTECTED, cacheProperties.ttl.toMillis())
+            } catch (e: Exception) {
+                logger.warn("Failed to re-populate cache for ${entity.shortCode} after setting password", e)
+            }
         }
 
         if (request.tagIds != null) {
@@ -191,7 +231,8 @@ class UrlService(
         } else {
             // Re-populate cache when reactivating
             try {
-                redisClient.set(urlCacheKey(shortCode), entity.longUrl, cacheProperties.ttl.toMillis())
+                val cacheValue = if (entity.passwordHash != null) CACHE_SENTINEL_PASSWORD_PROTECTED else entity.longUrl
+                redisClient.set(urlCacheKey(shortCode), cacheValue, cacheProperties.ttl.toMillis())
             } catch (e: Exception) {
                 logger.warn("Failed to re-populate cache for $shortCode after reactivation", e)
             }
@@ -222,6 +263,37 @@ class UrlService(
         expiresAt = entity.expiresAt?.toString(),
         isActive = entity.isActive,
         isCustomAlias = entity.isCustomAlias,
+        passwordProtected = entity.passwordHash != null,
         tags = entity.tags.map { TagResponse(it.id, it.name, it.createdAt.toString()) }
     )
+
+    /**
+     * Verifies the password for a password-protected link and returns the long URL to redirect to.
+     * If the link has no password, returns the long URL. If password is wrong, throws InvalidLinkPasswordException.
+     */
+    @Transactional(readOnly = true)
+    fun unlock(shortCode: String, password: String): String {
+        val entity = urlRepository.findByShortCode(shortCode)
+            ?: throw UrlNotFoundException("Short code not found: $shortCode")
+
+        entity.expiresAt?.let { expiresAt ->
+            if (Instant.now().isAfter(expiresAt)) {
+                throw UrlExpiredException("Short code has expired: $shortCode")
+            }
+        }
+
+        if (!entity.isActive) {
+            throw UrlPausedException("This link is currently paused: $shortCode")
+        }
+
+        if (entity.passwordHash == null) {
+            return entity.longUrl
+        }
+
+        if (!passwordEncoder.matches(password, entity.passwordHash)) {
+            throw InvalidLinkPasswordException("Incorrect password")
+        }
+
+        return entity.longUrl
+    }
 }

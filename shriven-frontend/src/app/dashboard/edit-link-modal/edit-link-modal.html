@@ -61,6 +61,30 @@
       }
     </div>
 
+    <div class="modal-field">
+      <label class="modal-label">Link password</label>
+      <input
+        type="password"
+        class="modal-input"
+        placeholder="Leave empty to keep current"
+        [ngModel]="editPassword()"
+        (ngModelChange)="editPassword.set($event)"
+        [disabled]="editClearPassword()"
+        maxlength="128"
+        autocomplete="off"
+      />
+      @if (url()?.passwordProtected) {
+        <label class="clear-expiry-label">
+          <input
+            type="checkbox"
+            [ngModel]="editClearPassword()"
+            (ngModelChange)="editClearPassword.set($event)"
+          />
+          Clear password (make link public)
+        </label>
+      }
+    </div>
+
     @if (userTags().length > 0) {
       <div class="modal-field">
         <label class="modal-label">Tags</label>

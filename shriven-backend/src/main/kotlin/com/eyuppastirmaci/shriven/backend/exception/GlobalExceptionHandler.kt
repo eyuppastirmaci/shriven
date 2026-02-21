@@ -98,6 +98,22 @@ class GlobalExceptionHandler {
             .body(ErrorResponse(message = ex.message ?: "This link is currently paused", errorCode = "URL_PAUSED"))
     }
 
+    @ExceptionHandler(RequiresPasswordException::class)
+    fun handleRequiresPassword(ex: RequiresPasswordException): ResponseEntity<ErrorResponse> {
+        logger.info("Password required for link: {}", ex.shortCode)
+        return ResponseEntity
+            .status(HttpStatus.FORBIDDEN)
+            .body(ErrorResponse(message = ex.message ?: "This link is password-protected", errorCode = "PASSWORD_REQUIRED", data = mapOf("shortCode" to ex.shortCode)))
+    }
+
+    @ExceptionHandler(InvalidLinkPasswordException::class)
+    fun handleInvalidLinkPassword(ex: InvalidLinkPasswordException): ResponseEntity<ErrorResponse> {
+        logger.warn("Invalid link password attempt")
+        return ResponseEntity
+            .status(HttpStatus.UNAUTHORIZED)
+            .body(ErrorResponse(message = ex.message ?: "Incorrect password", errorCode = "INVALID_LINK_PASSWORD"))
+    }
+
     @ExceptionHandler(RateLimitExceededException::class)
     fun handleRateLimitExceeded(ex: RateLimitExceededException): ResponseEntity<ErrorResponse> {
         logger.warn("Rate limit exceeded")

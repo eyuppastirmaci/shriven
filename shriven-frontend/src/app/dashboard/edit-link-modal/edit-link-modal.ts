@@ -27,6 +27,8 @@ export class EditLinkModalComponent implements OnChanges, OnDestroy {
   protected readonly editAlias = signal('');
   protected readonly editExpiresAt = signal('');
   protected readonly editClearExpiration = signal(false);
+  protected readonly editPassword = signal('');
+  protected readonly editClearPassword = signal(false);
   protected readonly editSelectedTagIds = signal<Set<number>>(new Set());
   protected readonly editSaving = signal(false);
   protected readonly editAliasAvailable = signal<boolean | null>(null);
@@ -95,6 +97,8 @@ export class EditLinkModalComponent implements OnChanges, OnDestroy {
       this.editAlias.set(url.isCustomAlias ? url.shortCode : '');
       this.editExpiresAt.set(url.expiresAt ? url.expiresAt.split('T')[0] : '');
       this.editClearExpiration.set(false);
+      this.editPassword.set('');
+      this.editClearPassword.set(false);
       this.editSelectedTagIds.set(new Set(url.tags.map(t => t.id)));
       this.editAliasAvailable.set(null);
       this.editAliasChecking.set(false);
@@ -143,12 +147,24 @@ export class EditLinkModalComponent implements OnChanges, OnDestroy {
     const expiresAtValue = this.editExpiresAt();
     const clearExpiration = this.editClearExpiration();
 
-    const request: { customAlias?: string; expiresAt?: string; clearExpiration?: boolean; tagIds: number[] } = {
+    const request: {
+      customAlias?: string;
+      expiresAt?: string;
+      clearExpiration?: boolean;
+      tagIds: number[];
+      password?: string;
+      clearPassword?: boolean;
+    } = {
       tagIds: Array.from(this.editSelectedTagIds())
     };
     if (alias && alias !== url.shortCode) request.customAlias = alias;
     if (clearExpiration) request.clearExpiration = true;
     else if (expiresAtValue) request.expiresAt = new Date(expiresAtValue).toISOString();
+    if (this.editClearPassword()) request.clearPassword = true;
+    else {
+      const pwd = this.editPassword()?.trim();
+      if (pwd) request.password = pwd;
+    }
 
     this.urlService.updateUrl(url.shortCode, request).subscribe({
       next: (updated) => {

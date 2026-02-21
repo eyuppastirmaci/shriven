@@ -50,6 +50,9 @@ data class UrlEntity(
     @Column(name = "is_custom_alias", nullable = false)
     var isCustomAlias: Boolean = false,
 
+    @Column(name = "password_hash")
+    var passwordHash: String? = null,
+
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
         name = "url_tags",

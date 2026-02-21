@@ -21,5 +21,8 @@ data class ShortenUrlRequest(
 
     val expiresAt: String? = null,
 
-    val tagIds: List<Long>? = null
+    val tagIds: List<Long>? = null,
+
+    @field:Size(min = 1, max = 128, message = "Password must be 1–128 characters")
+    val password: String? = null
 )

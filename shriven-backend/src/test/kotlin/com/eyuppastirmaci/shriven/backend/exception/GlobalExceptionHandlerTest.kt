@@ -31,4 +31,28 @@ class GlobalExceptionHandlerTest {
         assertNull(response.headers["Retry-After"]?.firstOrNull())
         assertEquals("RATE_LIMIT_EXCEEDED", response.body?.errorCode)
     }
+
+    @Test
+    fun `handleRequiresPassword returns 403 with PASSWORD_REQUIRED and shortCode in data`() {
+        val ex = RequiresPasswordException(shortCode = "abc123")
+
+        val response = handler.handleRequiresPassword(ex)
+
+        assertEquals(HttpStatus.FORBIDDEN, response.statusCode)
+        assertEquals("PASSWORD_REQUIRED", response.body?.errorCode)
+        @Suppress("UNCHECKED_CAST")
+        val data = response.body?.data as? Map<String, String>
+        assertEquals("abc123", data?.get("shortCode"))
+    }
+
+    @Test
+    fun `handleInvalidLinkPassword returns 401 with INVALID_LINK_PASSWORD`() {
+        val ex = InvalidLinkPasswordException("Incorrect password")
+
+        val response = handler.handleInvalidLinkPassword(ex)
+
+        assertEquals(HttpStatus.UNAUTHORIZED, response.statusCode)
+        assertEquals("INVALID_LINK_PASSWORD", response.body?.errorCode)
+        assertEquals("Incorrect password", response.body?.message)
+    }
 }

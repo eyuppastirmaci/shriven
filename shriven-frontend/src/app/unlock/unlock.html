@@ -1,0 +1,50 @@
+<div class="unlock-page">
+  <div class="unlock-card">
+    <div class="unlock-header">
+      <lucide-icon [img]="linkIcon" [size]="36" class="unlock-logo" />
+      <h1>Password required</h1>
+      <p>This link is protected. Enter the password to continue.</p>
+    </div>
+
+    @if (!code()) {
+      <div class="unlock-error">{{ error() }}</div>
+      <a routerLink="/" class="unlock-home-link">Back to home</a>
+    } @else {
+      <form class="unlock-form" (ngSubmit)="onSubmit()">
+        @if (error()) {
+          <div class="unlock-error">{{ error() }}</div>
+        }
+
+        <div class="field-group">
+          <label for="unlock-password">Password</label>
+          <div class="input-wrap">
+            <lucide-icon [img]="keyIcon" [size]="16" class="input-icon" />
+            <input
+              id="unlock-password"
+              type="password"
+              placeholder="Enter the link password"
+              [ngModel]="password()"
+              (ngModelChange)="password.set($event)"
+              name="password"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+
+        <button type="submit" class="unlock-btn" [disabled]="isLoading()">
+          @if (isLoading()) {
+            <span class="spinner"></span>
+            Opening...
+          } @else {
+            <lucide-icon [img]="unlockIcon" [size]="16" />
+            Unlock link
+          }
+        </button>
+      </form>
+
+      <p class="unlock-footer">
+        <a routerLink="/">Back to home</a>
+      </p>
+    }
+  </div>
+</div>

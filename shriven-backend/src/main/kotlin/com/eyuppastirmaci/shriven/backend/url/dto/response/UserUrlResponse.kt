@@ -11,5 +11,6 @@ data class UserUrlResponse(
     val expiresAt: String?,
     val isActive: Boolean = true,
     val isCustomAlias: Boolean = false,
+    val passwordProtected: Boolean = false,
     val tags: List<TagResponse> = emptyList()
 )

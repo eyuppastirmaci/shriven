@@ -5,9 +5,11 @@ import com.eyuppastirmaci.shriven.backend.properties.AppProperties
 import com.eyuppastirmaci.shriven.backend.snowflake.Base62Encoder
 import com.eyuppastirmaci.shriven.backend.url.dto.request.ShortenUrlRequest
 import com.eyuppastirmaci.shriven.backend.url.dto.request.ToggleUrlStatusRequest
+import com.eyuppastirmaci.shriven.backend.url.dto.request.UnlockRequest
 import com.eyuppastirmaci.shriven.backend.url.dto.request.UpdateUrlRequest
 import com.eyuppastirmaci.shriven.backend.url.dto.response.AliasAvailabilityResponse
 import com.eyuppastirmaci.shriven.backend.url.dto.response.ShortenUrlResponse
+import com.eyuppastirmaci.shriven.backend.url.dto.response.UnlockResponse
 import com.eyuppastirmaci.shriven.backend.url.dto.response.UserUrlResponse
 import com.eyuppastirmaci.shriven.backend.ratelimit.RateLimited
 import jakarta.servlet.http.HttpServletRequest
@@ -46,7 +48,8 @@ class UrlController(
             shortCode = entity.shortCode,
             createdAt = entity.createdAt.toString(),
             expiresAt = entity.expiresAt?.toString(),
-            isCustomAlias = entity.isCustomAlias
+            isCustomAlias = entity.isCustomAlias,
+            passwordProtected = entity.passwordHash != null
         )
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response)
@@ -67,6 +70,21 @@ class UrlController(
             .status(HttpStatus.FOUND)
             .location(URI.create(longUrl))
             .build()
+    }
+
+    @PostMapping("/{shortCode}/unlock")
+    @RateLimited(requestsPerMinute = 60, keyPrefix = "unlock")
+    fun unlock(
+        @PathVariable shortCode: String,
+        @Valid @RequestBody request: UnlockRequest
+    ): ResponseEntity<UnlockResponse> {
+        if (!base62Encoder.isValid(shortCode) && !shortCode.matches(Regex("^[a-zA-Z0-9_-]{3,30}$"))) {
+            return ResponseEntity.badRequest().build()
+        }
+
+        val redirectUrl = urlService.unlock(shortCode, request.password)
+
+        return ResponseEntity.ok(UnlockResponse(redirectUrl = redirectUrl))
     }
 
     @GetMapping("/api/urls")

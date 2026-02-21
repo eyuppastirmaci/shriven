@@ -23,8 +23,10 @@
       <app-shortener-advanced-options
         [customAlias]="customAlias()"
         [expiresAt]="expiresAt()"
+        [password]="password()"
         (customAliasChange)="customAlias.set($event)"
         (expiresAtChange)="expiresAt.set($event)"
+        (passwordChange)="password.set($event)"
         (aliasAvailableChange)="aliasAvailable.set($event)"
       />
     }
