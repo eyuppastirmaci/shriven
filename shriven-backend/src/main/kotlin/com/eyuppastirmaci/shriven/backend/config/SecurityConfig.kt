@@ -24,6 +24,7 @@ class SecurityConfig(private val jwtAuthFilter: JwtAuthFilter) {
             .authorizeHttpRequests { auth ->
                 auth
                     .requestMatchers(HttpMethod.POST, "/api/auth/**").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/api/shorten").permitAll()
                     .requestMatchers(HttpMethod.GET, "/{shortCode}").permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .anyRequest().authenticated()

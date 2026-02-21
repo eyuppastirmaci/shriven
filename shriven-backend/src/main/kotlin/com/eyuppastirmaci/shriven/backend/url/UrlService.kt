@@ -9,6 +9,7 @@ import com.eyuppastirmaci.shriven.backend.redis.RedisClient
 import com.eyuppastirmaci.shriven.backend.snowflake.Base62Encoder
 import com.eyuppastirmaci.shriven.backend.snowflake.SnowflakeIdGenerator
 import com.eyuppastirmaci.shriven.backend.url.dto.request.ShortenUrlRequest
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -21,6 +22,9 @@ class UrlService(
     private val redisClient: RedisClient,
     private val kafkaClient: KafkaClient
 ) {
+    companion object {
+        private val logger = LoggerFactory.getLogger(UrlService::class.java)
+    }
 
     /**
      * Creates a shortened URL from a long URL.
@@ -84,12 +88,15 @@ class UrlService(
 
         entity.expiresAt?.let { expiresAt ->
             if (Instant.now().isAfter(expiresAt)) {
-                redisClient.deleteUrl(shortCode)
                 throw UrlExpiredException("Short code has expired: $shortCode")
             }
         }
 
-        redisClient.saveUrl(shortCode, entity.longUrl)
+        try {
+            redisClient.saveUrl(shortCode, entity.longUrl)
+        } catch (e: Exception) {
+            logger.warn("Failed to populate cache for $shortCode", e)
+        }
 
         kafkaClient.sendClickEvent(ClickEvent(shortCode, Instant.now(), userAgent, ipAddress))
 

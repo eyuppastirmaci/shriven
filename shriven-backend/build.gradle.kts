@@ -31,8 +31,10 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("tools.jackson.module:jackson-module-kotlin")
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
+	implementation("org.flywaydb:flyway-core")
 
 	runtimeOnly("org.postgresql:postgresql")
+	runtimeOnly("org.flywaydb:flyway-database-postgresql")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
 
@@ -41,6 +43,7 @@ dependencies {
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("com.h2database:h2")
+	testImplementation("io.mockk:mockk:1.14.2")
 }
 
 kotlin {
@@ -58,4 +61,23 @@ allOpen {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+
+	testLogging {
+		events("passed", "skipped", "failed")
+		showStandardStreams = false
+	}
+
+	addTestListener(object : TestListener {
+		override fun beforeSuite(suite: TestDescriptor) {}
+		override fun afterSuite(suite: TestDescriptor, result: TestResult) {
+			if (suite.parent == null) {
+				println("\n========================================")
+				println("  Test Results: ${result.resultType}")
+				println("  Total: ${result.testCount}  |  Passed: ${result.successfulTestCount}  |  Failed: ${result.failedTestCount}  |  Skipped: ${result.skippedTestCount}")
+				println("========================================\n")
+			}
+		}
+		override fun beforeTest(testDescriptor: TestDescriptor) {}
+		override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {}
+	})
 }

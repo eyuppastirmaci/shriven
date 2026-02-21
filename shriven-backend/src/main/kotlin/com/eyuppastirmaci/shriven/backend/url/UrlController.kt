@@ -2,6 +2,7 @@ package com.eyuppastirmaci.shriven.backend.url
 
 import com.eyuppastirmaci.shriven.backend.auth.AuthPrincipal
 import com.eyuppastirmaci.shriven.backend.properties.AppProperties
+import com.eyuppastirmaci.shriven.backend.snowflake.Base62Encoder
 import com.eyuppastirmaci.shriven.backend.url.dto.request.ShortenUrlRequest
 import com.eyuppastirmaci.shriven.backend.url.dto.response.ShortenUrlResponse
 import com.eyuppastirmaci.shriven.backend.url.dto.response.UserUrlResponse
@@ -15,14 +16,14 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 import java.net.URI
 
 @RestController
 class UrlController(
     private val urlService: UrlService,
-    private val appProperties: AppProperties
+    private val appProperties: AppProperties,
+    private val base62Encoder: Base62Encoder
 ) {
 
     @PostMapping("/api/shorten")
@@ -48,6 +49,10 @@ class UrlController(
         @PathVariable shortCode: String,
         request: HttpServletRequest
     ): ResponseEntity<Void> {
+        if (!base62Encoder.isValid(shortCode)) {
+            return ResponseEntity.badRequest().build()
+        }
+
         val userAgent = request.getHeader("User-Agent")
         val ipAddress = request.remoteAddr
 

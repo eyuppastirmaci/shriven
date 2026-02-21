@@ -43,7 +43,7 @@
                 {{ url.shortUrl }}
                 <lucide-icon [img]="externalLinkIcon" [size]="12" />
               </a>
-              <span class="click-badge">{{ url.clickCount }} clicks</span>
+              <span class="click-badge" appTooltip="Click counts may be slightly delayed" tooltipPosition="top">{{ url.clickCount }} clicks</span>
             </div>
             <div class="link-long" [title]="url.longUrl">{{ url.longUrl }}</div>
             <div class="link-meta">Created {{ formatDate(url.createdAt) }}</div>

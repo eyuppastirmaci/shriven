@@ -2,6 +2,7 @@ package com.eyuppastirmaci.shriven.backend.redis
 
 import com.eyuppastirmaci.shriven.backend.exception.RedisOperationException
 import com.eyuppastirmaci.shriven.backend.properties.CacheProperties
+import org.slf4j.LoggerFactory
 import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
@@ -12,6 +13,7 @@ class RedisClient(
     private val cacheProperties: CacheProperties
 ) {
     companion object {
+        private val logger = LoggerFactory.getLogger(RedisClient::class.java)
         private const val SHORT_URL_KEY_PREFIX = "short:"
     }
 
@@ -41,6 +43,9 @@ class RedisClient(
     /**
      * Retrieves the original long URL associated with the given short code.
      *
+     * Returns null both when the key doesn't exist and when Redis is unavailable,
+     * allowing the caller to fall back to the database (cache-aside resilience).
+     *
      * @param shortCode The short code to look up.
      * @return The original long URL if found, or null if the key does not exist or Redis is unavailable.
      */
@@ -49,7 +54,8 @@ class RedisClient(
         return try {
             redisTemplate.opsForValue().get(key)
         } catch (e: Exception) {
-            throw RedisOperationException("Failed to retrieve URL from cache for key: $key", e)
+            logger.warn("Redis unavailable for key: $key, falling back to DB", e)
+            null
         }
     }
 

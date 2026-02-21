@@ -6,16 +6,26 @@ import org.springframework.test.context.TestPropertySource
 
 @SpringBootTest
 @TestPropertySource(properties = [
-	"spring.datasource.url=jdbc:h2:mem:testdb",
+	// Resolve ${DB_*} placeholders in application.yaml with H2
+	"DB_URL=jdbc:h2:mem:testdb",
+	"DB_USERNAME=sa",
+	"DB_PASSWORD=",
 	"spring.datasource.driver-class-name=org.h2.Driver",
-	"spring.datasource.username=sa",
-	"spring.datasource.password=",
-	"spring.jpa.hibernate.ddl-auto=create-drop"
+	// Let Hibernate manage the H2 schema - Flyway is disabled (H2 can't run PostgreSQL-specific SQL)
+	"spring.jpa.hibernate.ddl-auto=create-drop",
+	"spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
+	"spring.flyway.enabled=false",
+	// Resolve ${JWT_*} placeholders in application.yaml
+	"JWT_SECRET=dGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItdGVzdGluZy1vbmx5LTI1NmJpdHM=",
+	"JWT_EXPIRATION=900000",
+	"JWT_REFRESH_EXPIRATION=2592000000",
+	// Prevent Kafka listeners from auto-starting (Kafka is not available in tests)
+	"spring.kafka.listener.auto-startup=false"
 ])
 class ShrivenBackendApplicationTests {
 
 	@Test
 	fun contextLoads() {
-		// Just verify Spring context loads
+		// Verify Spring context loads with H2, no Flyway, no live Kafka/Redis connections
 	}
 }

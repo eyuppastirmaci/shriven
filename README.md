@@ -87,3 +87,15 @@ cd shriven-frontend
 npm install
 ng serve
 ```
+
+## Running Tests
+
+```bash
+cd shriven-backend
+
+# Run all tests (uses cached results when nothing changed)
+./gradlew test
+
+# Force re-run all tests (ignores cache)
+./gradlew test --rerun
+```
