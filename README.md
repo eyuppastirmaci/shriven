@@ -52,15 +52,37 @@
 
 ## Getting Started
 
-```bash
-# Start infrastructure
-docker compose up -d
+### 1. Start Infrastructure
 
-# Run backend (local development)
+```bash
+docker compose up -d
+```
+
+### 2. Configure Backend
+
+Copy the example config and fill in your values:
+
+```bash
+cd shriven-backend/src/main/resources
+cp application-local.yml.example application-local.yml
+```
+
+Open `application-local.yml` and update the following variables:
+
+| Variable | Description |
+|----------|-------------|
+| `spring.datasource.username` | PostgreSQL username |
+| `spring.datasource.password` | PostgreSQL password |
+| `jwt.secret` | Base64-encoded 256-bit secret key for JWT signing |
+
+### 3. Run
+
+```bash
+# Backend
 cd shriven-backend
 ./gradlew bootRun
 
-# Run frontend
+# Frontend
 cd shriven-frontend
 npm install
 ng serve
